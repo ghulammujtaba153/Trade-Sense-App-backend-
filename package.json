@@ -1,4 +1,7 @@
 {
+  "scripts": {
+  "start": "node index.js" // or app.js or your entry file
+  },
   "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.2",
