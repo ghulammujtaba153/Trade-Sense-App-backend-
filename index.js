@@ -17,7 +17,11 @@ import resourceRouter from './routes/mindfulResourceRoutes.js';
 const app = express();
 dotenv.config();
 
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://trade-sense-admin.vercel.app'],
+    credentials: true,
+  }));
+  
 app.use(bodyParser.json());
 
 connectDB();
