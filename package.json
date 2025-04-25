@@ -1,6 +1,6 @@
 {
   "scripts": {
-  "start": "node index.js" // or app.js or your entry file
+  "start": "node index.js" 
   },
   "type": "module",
   "dependencies": {
