@@ -3,9 +3,9 @@ import Course from "../models/coursesSchema.js";
 
 export const createCourse = async (req, res) => {
     try {
-        const { creator, title, thumbnail, description, duration, price, modules } = req.body;
+        const { creator, title, thumbnail, description, duration, price } = req.body;
         const course = await Course.create({
-            creator, title, thumbnail, description, duration, price, modules
+            creator, title, thumbnail, description, duration, price
         });
         res.status(201).json(course);
     } catch (error) {
