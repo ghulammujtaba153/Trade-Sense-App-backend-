@@ -3,10 +3,10 @@ import { deleteUser, forgotPassword, getAllUsers, getEditors, getUser, login, re
 
 const authRouter = express.Router();
 
-// POST /api/auth/register
+
 authRouter.post('/register', register);
 
-// POST /api/auth/login
+
 authRouter.post('/login', login);
 
 authRouter.get("/users/:id", getUser);
