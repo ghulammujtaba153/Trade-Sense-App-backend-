@@ -167,7 +167,7 @@ export const getEditors = async (req, res) => {
   try {
     const users = await User.find({ 
       isDeleted: false, 
-      role: { $in: ["admin", "editor"] }
+      role: { $in: ["editor"] }
     });    
     res.status(200).json({ users: users });
   } catch (error) {

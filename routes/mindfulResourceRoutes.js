@@ -1,9 +1,13 @@
 import express from 'express';
-import { createMindfulResource, getMindfulResource } from '../controllers/mindfulResourceController.js';
+import { createMindfulResource, getMindfulResource, updateResource, deleteResource } from '../controllers/mindfulResourceController.js';
 
 const resourceRouter = express.Router();
 
 resourceRouter.post('/create', createMindfulResource);
-resourceRouter.get('/get', getMindfulResource);
+resourceRouter.get('/', getMindfulResource);
+
+resourceRouter.delete('/:id', deleteResource)
+
+resourceRouter.put("/:id", updateResource)
 
 export default resourceRouter;
