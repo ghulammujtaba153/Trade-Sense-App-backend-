@@ -11,9 +11,13 @@ const mindfulResourceSchema = new mongoose.Schema({
     enum: ['audio', 'video'],
     required: true
   },
+  pillar: {
+    type: String,
+    enum: ['focus', 'stress relief', 'emotional resilience', 'performance optimization'],
+    required: true
+  },
   category: {
     type: String,
-    enum: ['meditation', 'motivation', 'affirmation', 'breathing', 'focus', 'stress-relief'],
     required: true
   },
   tags: {
@@ -33,10 +37,6 @@ const mindfulResourceSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-    required: true
-  },
-  duration: {
-    type: Number,
     required: true
   },
   isPremium: {

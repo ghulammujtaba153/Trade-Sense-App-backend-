@@ -13,6 +13,14 @@ export const createGoal = async (req, res) => {
     }
 }
 
+export const getGoals = async (req, res) => {
+    try {
+        const goals = await Goals.find().populate('userId');
+        res.status(200).json(goals);
+    } catch (error) {
+        res.status(500).json({ error: 'Error getting goals' });
+    }
+}
 
 export const getGoalsByUser = async (req, res) => {
     const {id} = req.params;
@@ -39,10 +47,10 @@ export const deleteGoal = async (req, res) => {
 
 export const updateGoal = async (req, res) => {
     const { id } = req.params;
-    const { title, description, frequency, targetDate, reminders } = req.body;
+    const { title, description, frequency, targetDate, reminders, status } = req.body;
 
     try {
-        const goal = await Goals.findByIdAndUpdate(id, { title, description, frequency, targetDate, reminders }, { new: true });
+        const goal = await Goals.findByIdAndUpdate(id, { title, description, frequency, targetDate, reminders, status }, { new: true });
         res.status(200).json(goal);
     } catch (error) {
         res.status(500).json({ error: 'Error updating goal' });

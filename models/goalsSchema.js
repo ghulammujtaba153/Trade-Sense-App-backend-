@@ -15,9 +15,6 @@ const goalsSchema = new mongoose.Schema({
         enum: ["daily", "weekly", "monthly"],
         default: "daily",
     },
-    completedDates: {
-        type: [Date],
-    },
     targetDate: {
         type: Date,
         required: true,
@@ -30,6 +27,11 @@ const goalsSchema = new mongoose.Schema({
         time: {
             type: Date,
         },
+    },
+    status: {
+        type: String,
+        enum: ["active", "completed", "dropped"],
+        default: "active",
     },
     createdAt: {
         type: Date,

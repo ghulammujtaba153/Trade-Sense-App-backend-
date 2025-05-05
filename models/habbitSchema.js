@@ -18,10 +18,6 @@ const habbitSchema = new mongoose.Schema({
     completedDates: {
         type: [Date],
     },
-    targetDate: {
-        type: Date,
-        required: true,
-    },
     reminders: {
         enabled: {
             type: Boolean,

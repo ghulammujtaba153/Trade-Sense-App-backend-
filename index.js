@@ -13,6 +13,10 @@ import ratingRouter from './routes/ratingRoutes.js';
 import dashboardRouter from './routes/dashboardRoutes.js';
 import otpRouter from './routes/otpRoutes.js';
 import resourceRouter from './routes/mindfulResourceRoutes.js';
+import onBoardingQuestionnaireRouter from './routes/onBoardingQuestionnaireRoutes.js';
+import onBoardingRouter from './routes/onBoardingRoutes.js';
+import pillarsCategoriesRouter from './routes/pillarsCategoriesRoutes.js';
+import notificationRouter from './routes/notificationRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -36,6 +40,10 @@ app.use("/api/habbits", habbitRouter);
 app.use("/api/ratings", ratingRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/resources", resourceRouter);
+app.use("/api/onboarding/questionnaire", onBoardingQuestionnaireRouter);
+app.use("/api/onboarding", onBoardingRouter);
+app.use("/api/pillars/categories", pillarsCategoriesRouter);
+app.use("/api/notifications", notificationRouter);
 
 
 

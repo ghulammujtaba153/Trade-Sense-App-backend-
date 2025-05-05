@@ -1,0 +1,13 @@
+import express from "express";
+import { createNotification, deleteNotification, updateNotification, getAllNotifications, getNotificationHistory, markNotificationAsSeen } from "../controllers/notificationController.js";
+
+const notificationRouter = express.Router();
+
+notificationRouter.post("/create", createNotification);
+notificationRouter.get("/all", getAllNotifications);
+notificationRouter.get("/history", getNotificationHistory);
+notificationRouter.patch("/seen/:id", markNotificationAsSeen);
+notificationRouter.put("/:id", updateNotification);
+notificationRouter.delete("/:id", deleteNotification)
+
+export default notificationRouter;

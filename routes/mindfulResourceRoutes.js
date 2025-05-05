@@ -3,11 +3,13 @@ import { createMindfulResource, getMindfulResource, updateResource, deleteResour
 
 const resourceRouter = express.Router();
 
-resourceRouter.post('/create', createMindfulResource);
+resourceRouter.post('/', createMindfulResource);
 resourceRouter.get('/', getMindfulResource);
 
-resourceRouter.delete('/:id', deleteResource)
+resourceRouter.delete('/:id', deleteResource);
 
-resourceRouter.put("/:id", updateResource)
+resourceRouter.put("/:id", updateResource);
+
+
 
 export default resourceRouter;

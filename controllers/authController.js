@@ -8,7 +8,7 @@ dotenv.config();
 
 
 export const register = async (req, res) => {
-  const { name, phone, email, password, role } = req.body;
+  const { name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
 
   try {
 
@@ -29,6 +29,14 @@ export const register = async (req, res) => {
 
     if (role) {
       data.role = role;
+    }
+
+    if (gender, ageRange, goals, choosenArea, questionnaireAnswers) {
+      data.gender = gender;
+      data.ageRange = ageRange;
+      data.goals = goals;
+      data.choosenArea = choosenArea;
+      data.questionnaireAnswers = questionnaireAnswers;
     }
     const user = await User.create(data);
     res.status(201).json({ user });
@@ -73,6 +81,30 @@ export const login = async (req, res) => {
   }
 }
 
+export const setupProfile = async (req, res) => {
+  const { id } = req.params;
+  const { gender, ageRange, goals, choosenArea } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isDeleted) {
+      return res.status(404).json({ message: "User is deleted" });
+    }
+    user.gender = gender;
+    user.ageRange = ageRange;
+    user.goals = goals;
+    user.choosenArea = choosenArea;
+    await user.save();
+
+    res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 export const deleteUser = async (req, res) => {
   const {id} = req.params;
@@ -90,7 +122,7 @@ export const deleteUser = async (req, res) => {
 }
 
 export const updateUser = async (req, res) => {
-  const { profilePic, name, phone, email, password, role } = req.body;
+  const { profilePic, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
 
   try {
 
@@ -113,6 +145,14 @@ export const updateUser = async (req, res) => {
 
     if (role) {
       data.role = role;
+    }
+
+    if (gender, ageRange, goals, choosenArea, questionnaireAnswers) {
+      data.gender = gender;
+      data.ageRange = ageRange;
+      data.goals = goals;
+      data.choosenArea = choosenArea;
+      data.questionnaireAnswers = questionnaireAnswers;
     }
     const user = await User.findByIdAndUpdate(req.params.id, data, { new: true });
 
@@ -169,6 +209,16 @@ export const getEditors = async (req, res) => {
       isDeleted: false, 
       role: { $in: ["editor"] }
     });    
+    res.status(200).json({ users: users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+
+export const getAdmins = async (req, res) => {
+  try {
+    const users = await User.find({ isDeleted: false, role: "admin" });
     res.status(200).json({ users: users });
   } catch (error) {
     res.status(500).json({ message: error.message });

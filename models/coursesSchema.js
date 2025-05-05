@@ -5,6 +5,14 @@ const courseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    instructor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    plan: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Plan',
+    }],
     title: {
         type: String,
         required: true
@@ -15,14 +23,6 @@ const courseSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
-    },
-    duration: {
-        type: String,
-        required: true
-    },
-    price: {
-        type: Number,
         required: true
     },
     modules: [

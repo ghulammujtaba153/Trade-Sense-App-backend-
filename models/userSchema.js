@@ -55,6 +55,11 @@ const userSchema = new mongoose.Schema({
         type: String,
       }
     ],
+    questionnaireAnswers: {
+      type: Map,
+      of: [String],
+      default: {}
+    },
     status: {
       type: String,
       enum: ["active", "suspended"],

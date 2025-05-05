@@ -125,3 +125,14 @@ export const deletePlan = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+
+export const getMembershipPlan = async (req, res) => {
+    try {
+        const plan = await Plan.find({ category: 'membership' });
+        
+        res.status(200).json(plan);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}

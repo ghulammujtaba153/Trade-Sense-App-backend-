@@ -1,10 +1,12 @@
 import express from 'express';
-import { deleteUser, forgotPassword, getAllUsers, getEditors, getUser, login, register, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
+import { deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, register, setupProfile, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
 
 const authRouter = express.Router();
 
 
 authRouter.post('/register', register);
+
+authRouter.post('/setup-profile', setupProfile);
 
 
 authRouter.post('/login', login);
@@ -15,6 +17,9 @@ authRouter.get("/users", getAllUsers);
 
 
 authRouter.get("/editors", getEditors);
+
+authRouter.get("/admins", getAdmins);
+
 
 authRouter.patch("/users/:id", deleteUser);
 
