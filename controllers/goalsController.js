@@ -56,3 +56,32 @@ export const updateGoal = async (req, res) => {
         res.status(500).json({ error: 'Error updating goal' });
     }
 }
+
+
+export const updateGoalStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const goal = await Goals.findByIdAndUpdate(id, { status: status }, { new: true });
+        res.status(200).json(goal);
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating goal' });
+    }
+}
+
+
+export const goalAnalysis = async (req, res) => {
+    console.log("goalAnalysis triggered");
+
+    try {
+        const completedGoals = await Goals.find({ status: 'completed' });
+        const activeGoals = await Goals.find({ status: 'active' });
+
+        return res.status(200).json({ completedGoals, activeGoals });
+
+    } catch (error) {
+        console.error("Error analyzing goals:", error.message);
+        res.status(500).json({ error: 'Error analyzing goal', details: error.message });
+    }
+}

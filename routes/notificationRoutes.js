@@ -1,5 +1,5 @@
 import express from "express";
-import { createNotification, deleteNotification, updateNotification, getAllNotifications, getNotificationHistory, markNotificationAsSeen } from "../controllers/notificationController.js";
+import { createNotification, deleteNotification, updateNotification, getAllNotifications, getNotificationHistory, markNotificationAsSeen, getNotificationsByUserId } from "../controllers/notificationController.js";
 
 const notificationRouter = express.Router();
 
@@ -9,5 +9,6 @@ notificationRouter.get("/history", getNotificationHistory);
 notificationRouter.patch("/seen/:id", markNotificationAsSeen);
 notificationRouter.put("/:id", updateNotification);
 notificationRouter.delete("/:id", deleteNotification)
+notificationRouter.get("/:id", getNotificationsByUserId);
 
 export default notificationRouter;

@@ -1,30 +1,53 @@
 import Notification from "../models/notificationSchema.js";
+import User from "../models/userSchema.js";
+
+
+
 
 export const createNotification = async (req, res) => {
   try {
     const {
       title,
       message,
-      targetAudience,
-      scheduleTime, // optional: for scheduled notifications
-      type, // optional: 'info', 'alert', etc.
+      targetType,
+      scheduleTime,
+       sendType,
+       targetRoles,	
+       recipients,	
+       sendAt
     } = req.body;
 
-    if (!title || !message || !targetAudience) {
-      return res
-        .status(400)
-        .json({ message: "Title, message, and targetAudience are required." });
+
+    const notificationData = {
+      title: title.trim(),
+      message: message.trim(),
+      targetType,
+      sendType,
+      status: scheduleTime ? "scheduled" : "sent",
+    };
+
+    if (targetRoles){
+      notificationData.targetRoles = targetRoles;
     }
 
-    const newNotification = new Notification({
-      title,
-      message,
-      targetAudience,
-      scheduleTime,
-      type,
-      status: scheduleTime ? "scheduled" : "sent",
-    });
+    if (recipients){
+      notificationData.recipients = recipients;
+    }
 
+    if(sendAt){
+      notificationData.sendAt = sendAt;
+    }
+
+
+    if (scheduleTime) {
+      const scheduleDate = new Date(scheduleTime);
+      if (isNaN(scheduleDate.getTime())) {
+        return res.status(400).json({ message: "Invalid scheduleTime format." });
+      }
+      notificationData.sendAt = scheduleDate;
+    }
+
+    const newNotification = new Notification(notificationData);
     await newNotification.save();
 
     res.status(201).json({
@@ -37,10 +60,24 @@ export const createNotification = async (req, res) => {
   }
 };
 
+
+
 export const updateNotification = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+
+    if (updates.title) updates.title = updates.title.trim();
+    if (updates.message) updates.message = updates.message.trim();
+
+    if (updates.scheduleTime) {
+      const scheduleDate = new Date(updates.scheduleTime);
+      if (isNaN(scheduleDate.getTime())) {
+        return res.status(400).json({ message: "Invalid scheduleTime format." });
+      }
+      updates.scheduleTime = scheduleDate;
+      updates.status = "scheduled";
+    }
 
     const updatedNotification = await Notification.findByIdAndUpdate(
       id,
@@ -49,20 +86,20 @@ export const updateNotification = async (req, res) => {
     );
 
     if (!updatedNotification) {
-      return res.status(404).json({ message: "Notification not found" });
+      return res.status(404).json({ message: "Notification not found." });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Notification updated",
-        notification: updatedNotification,
-      });
+    res.status(200).json({
+      message: "Notification updated successfully.",
+      notification: updatedNotification,
+    });
   } catch (error) {
     console.error("Error updating notification:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error." });
   }
 };
+
+
 
 export const deleteNotification = async (req, res) => {
   try {
@@ -152,3 +189,38 @@ export const getNotificationHistory = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+
+export const getNotificationsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+   
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const now = new Date();
+
+    
+    const notifications = await Notification.find({
+      sendAt: { $gte: user.createdAt, $lte: now }, 
+      $or: [
+        { sendType: "now" },
+        { sendType: "scheduled", sendAt: { $lte: now } }, 
+      ],
+      $or: [
+        { targetType: "all" },
+        { targetType: "specific", recipients: user._id },
+        { targetType: "roles", targetRoles: user.role },
+      ],
+    }).sort({ sendAt: -1 });
+
+    res.status(200).json({ notifications });
+  } catch (error) {
+    console.error("Error fetching notifications for user:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+

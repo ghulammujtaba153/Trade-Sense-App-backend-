@@ -4,56 +4,51 @@ const notificationSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
+    minlength: 2,
+    maxlength: 100,
     trim: true,
   },
   message: {
     type: String,
     required: true,
+    minlength: 5,
+    maxlength: 500,
     trim: true,
   },
-  recipients: {
-    type: [mongoose.Schema.Types.ObjectId], 
-    ref: 'User',
-    default: [], 
+  targetType: {
+    type: String,
+    enum: ["all", "specific", "roles"],
+    default: "all",
   },
-  targetRoles: {
-    type: [String], 
-    default: [],
+  recipients: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  targetRoles: [
+    {
+      type: String, 
+      enum: ["admin", "user", "editor"],
+    },
+  ],
+  sendType: {
+    type: String,
+    enum: ["now", "scheduled"],
+    default: "now",
   },
   sendAt: {
     type: Date,
+    required: true,
     default: Date.now,
   },
   status: {
     type: String,
-    enum: ['scheduled', 'sent', 'failed'],
-    default: 'scheduled',
+    enum: ["sent", "scheduled"],
+    default: "scheduled",
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  logs: [
-    {
-      userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-      delivered: {
-        type: Boolean,
-        default: false,
-      },
-      seen: {
-        type: Boolean,
-        default: false,
-      },
-      seenAt: Date,
-    }
-  ],
 }, {
-  timestamps: true, 
+  timestamps: true,
 });
 
-const Notification = mongoose.model('Notification', notificationSchema);
-
-export default Notification;
+export default mongoose.model("Notification", notificationSchema);
