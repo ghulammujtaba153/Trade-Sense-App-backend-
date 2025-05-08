@@ -13,57 +13,75 @@ export const createCourse = async (req, res) => {
     }
 }
 
+
+
 export const getAllCourses = async (req, res) => {
+    console.log("getAllCourses");
     try {
-        const courses = await Course.aggregate([
-            { $match: { isDeleted: false } },
-            {
-              $lookup: {
-                from: "ratings", 
-                localField: "_id",      
-                foreignField: "courseId",
-                as: "ratings"
-              }
-            },
-            {
-              $lookup: {
-                from: "users",
-                localField: "creator",
-                foreignField: "_id",
-                as: "creator"
-              }
-            },
-            {
-                $lookup: {
-                  from: "users",
-                  localField: "instructor",
-                  foreignField: "_id",
-                  as: "instructor"
-                }
-            },
-            {
-              $unwind: "$creator"
-            },
-            {
-              $addFields: {
-                averageRating: { $avg: "$ratings.rating" },
-                totalRatings: { $size: "$ratings" }
-              }
-            }
-          ]);
-          
-          
-        res.status(200).json(courses);
+      const courses = await Course.aggregate([
+        { $match: { isDeleted: false } },
+
+        {
+          $lookup: {
+            from: "ratings",
+            localField: "_id",
+            foreignField: "courseId",
+            as: "ratings"
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "creator",
+            foreignField: "_id",
+            as: "creator"
+          }
+        },
+        {
+          $unwind: {
+            path: "$creator",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "instructor",
+            foreignField: "_id",
+            as: "instructor"
+          }
+        },
+        {
+          $unwind: {
+            path: "$instructor",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: {
+            averageRating: { $avg: "$ratings.rating" },
+            totalRatings: { $size: "$ratings" }
+          }
+        }
+      ]);
+  
+      console.log("courses", courses);
+      res.status(200).json(courses);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      console.error("Error in getAllCourses:", error);
+      res.status(500).json({ error: error.message });
     }
-}
+  };
+
+
+
 
 
 export const getCourse = async (req, res) => {
     const {id} = req.params;
     try {
         const courses = await Course.find({isDeleted: false, _id: id}).populate('creator').populate('instructor').populate('plan');
+        console.log("courses",courses);
         res.status(200).json(courses);
     } catch (error) {
         res.status(500).json({ error: error.message });

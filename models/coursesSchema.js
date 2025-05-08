@@ -8,6 +8,7 @@ const courseSchema = new mongoose.Schema({
     instructor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        default: null
     },
     plan: [{
         type: mongoose.Schema.Types.ObjectId,

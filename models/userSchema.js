@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
       of: [String],
       default: {}
     },
+    categories: {
+      type: [String],
+      default: []
+    },
     status: {
       type: String,
       enum: ["active", "suspended"],
@@ -69,7 +73,6 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     }
-
   }, {
     timestamps: true 
   }

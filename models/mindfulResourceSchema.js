@@ -13,7 +13,6 @@ const mindfulResourceSchema = new mongoose.Schema({
   },
   pillar: {
     type: String,
-    enum: ['focus', 'stress relief', 'emotional resilience', 'performance optimization'],
     required: true
   },
   category: {
@@ -22,17 +21,7 @@ const mindfulResourceSchema = new mongoose.Schema({
   },
   tags: {
     type: [String],
-    enum: [
-      'relaxation',
-      'confidence',
-      'mindfulness',
-      'energy boost',
-      'focus',
-      'calm',
-      'anxiety relief',
-      'daily ritual',
-      'positivity'
-    ],
+    
     default: []
   },
   url: {

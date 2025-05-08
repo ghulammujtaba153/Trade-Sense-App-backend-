@@ -52,3 +52,19 @@ export const deletePillarsCategories = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+
+export const getAllCategories = async (req, res) => {
+    try {
+      const pillarsCategories = await PillarsCategories.find();
+  
+
+      const allCategories = pillarsCategories.reduce((acc, curr) => {
+        return acc.concat(curr.categories);
+      }, []);
+  
+      res.status(200).json({ categories: allCategories });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };

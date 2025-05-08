@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPillarsCategories, deletePillarsCategories, getAllPillarsCategories, updatePillarsCategories } from '../controllers/pillarsCategoriesController.js';
+import { createPillarsCategories, deletePillarsCategories, getAllCategories, getAllPillarsCategories, updatePillarsCategories } from '../controllers/pillarsCategoriesController.js';
 
 const pillarsCategoriesRouter = express.Router();
 
@@ -8,6 +8,8 @@ pillarsCategoriesRouter.get("/", getAllPillarsCategories);
 
 pillarsCategoriesRouter.put("/:id", updatePillarsCategories);
 pillarsCategoriesRouter.delete("/:id", deletePillarsCategories);
+
+pillarsCategoriesRouter.get("/all", getAllCategories);
 
 export default pillarsCategoriesRouter;
 
