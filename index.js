@@ -18,6 +18,10 @@ import onBoardingRouter from './routes/onBoardingRoutes.js';
 import pillarsCategoriesRouter from './routes/pillarsCategoriesRoutes.js';
 import notificationRouter from './routes/notificationRoutes.js';
 import tagsRouter from './routes/tagsRoutes.js';
+import aboutRouter from './routes/aboutRoutes.js';
+import testimonialRouter from './routes/testimonialRoutes.js';
+import termsRouter from './routes/termsConditionRoutes.js';
+
 
 const app = express();
 dotenv.config();
@@ -46,6 +50,11 @@ app.use("/api/onboarding", onBoardingRouter);
 app.use("/api/pillars/categories", pillarsCategoriesRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/tags", tagsRouter);
+app.use('/api/about', aboutRouter);
+app.use("/api/testimonials", testimonialRouter);
+app.use("/api/terms", termsRouter);
+
+
 
 
 
