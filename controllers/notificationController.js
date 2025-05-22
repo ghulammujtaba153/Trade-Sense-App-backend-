@@ -1,7 +1,7 @@
+import DeliveredNotification from "../models/deliveredNotificationSchema.js";
 import Notification from "../models/notificationSchema.js";
 import User from "../models/userSchema.js";
-
-
+import { sendPushNotification } from "../utils/sendPushNotification.js";
 
 
 export const createNotification = async (req, res) => {
@@ -11,13 +11,15 @@ export const createNotification = async (req, res) => {
       message,
       targetType,
       scheduleTime,
-       sendType,
-       targetRoles,	
-       recipients,	
-       sendAt
+      sendType,
+      targetRoles,
+      recipients,
+      sendAt
     } = req.body;
 
+    console.log("notification data", req.body);
 
+    
     const notificationData = {
       title: title.trim(),
       message: message.trim(),
@@ -26,19 +28,42 @@ export const createNotification = async (req, res) => {
       status: scheduleTime ? "scheduled" : "sent",
     };
 
-    if (targetRoles){
+    
+    if (targetType === 'roles' && Array.isArray(targetRoles)) {
       notificationData.targetRoles = targetRoles;
-    }
 
-    if (recipients){
+      
+      const users = await User.find({
+        role: { $in: targetRoles },
+        isDeleted: false,
+        status: 'active',
+      }).select('_id');
+
+      console.log("users", users);
+
+      notificationData.recipients = users.map(user => user._id);
+    } 
+
+
+    if(targetType === 'specific') {
       notificationData.recipients = recipients;
     }
 
-    if(sendAt){
-      notificationData.sendAt = sendAt;
+
+    if (sendAt) {
+      notificationData.sendAt = new Date(sendAt);
     }
 
+    // Only send push notification immediately if it's not scheduled
+      if (!scheduleTime && notificationData.recipients.length > 0) {
+        await sendPushNotification({
+          headings: title,
+          contents: message,
+          userIds: notificationData.recipients
+        });
+      }
 
+   
     if (scheduleTime) {
       const scheduleDate = new Date(scheduleTime);
       if (isNaN(scheduleDate.getTime())) {
@@ -47,18 +72,32 @@ export const createNotification = async (req, res) => {
       notificationData.sendAt = scheduleDate;
     }
 
-    const newNotification = new Notification(notificationData);
-    await newNotification.save();
+    
+    const newNotification = await Notification.create(notificationData);
+
+    console.log("newNotification", newNotification);
+
+    
+    if (newNotification.recipients?.length) {
+      const deliveredNotifications = newNotification.recipients.map(userId => ({
+        receiverId: userId,
+        notificationId: newNotification._id,
+      }));
+
+      await DeliveredNotification.insertMany(deliveredNotifications);
+    }
 
     res.status(201).json({
       message: "Notification created successfully.",
       notification: newNotification,
     });
+
   } catch (error) {
     console.error("Error creating notification:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
 
 
 

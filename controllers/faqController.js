@@ -1,3 +1,4 @@
+import Faq from "../models/FAQSchema.js";
 
 
 export const createFaq = async (req, res) => {

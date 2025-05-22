@@ -23,6 +23,7 @@ import testimonialRouter from './routes/testimonialRoutes.js';
 import termsRouter from './routes/termsConditionRoutes.js';
 import faqRouter from './routes/faqRoutes.js';
 import ResourseProgressRouter from './routes/resourceProgressRoutes.js';
+import deliveredNotificationRouter from './routes/deliveredNotificationRoutes.js';
 
 
 const app = express();
@@ -57,6 +58,7 @@ app.use("/api/testimonials", testimonialRouter);
 app.use("/api/terms", termsRouter);
 app.use("/api/faq", faqRouter);
 app.use("/api/resource/progress", ResourseProgressRouter);
+app.use("/api/delivered/notifications", deliveredNotificationRouter)
 
 
 
