@@ -1,5 +1,5 @@
 import express from "express";
-import { createTermsCondition, getTermsCondition } from "../controllers/TermsConditionController.js";
+import { createTermsCondition, getTermsCondition } from "../controllers/termsConditionController.js";
 
 const termsRouter = express.Router();
 
