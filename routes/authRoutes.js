@@ -6,7 +6,7 @@ const authRouter = express.Router();
 
 authRouter.post('/register', register);
 
-authRouter.post('/setup-profile', setupProfile);
+authRouter.post('/setup-profile/:id', setupProfile);
 
 authRouter.post('/login', login);
 

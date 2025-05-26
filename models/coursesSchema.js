@@ -34,7 +34,7 @@ const courseSchema = new mongoose.Schema({
             content: {
                 type: String,
             },
-            videoUrl: {
+            url: {
                 type: String,
             }
         }

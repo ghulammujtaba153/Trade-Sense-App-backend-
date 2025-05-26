@@ -10,22 +10,9 @@ const habbitSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    frequency: {
+    type: {
         type: String,
-        enum: ["daily", "weekly", "monthly"],
-        default: "daily",
-    },
-    completedDates: {
-        type: [Date],
-    },
-    reminders: {
-        enabled: {
-            type: Boolean,
-            default: false,
-        },
-        time: {
-            type: Date,
-        },
+        required: true,
     },
     status: {
         type: String,
@@ -40,6 +27,10 @@ const habbitSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const Habbit = mongoose.model("Habbit", habbitSchema);
