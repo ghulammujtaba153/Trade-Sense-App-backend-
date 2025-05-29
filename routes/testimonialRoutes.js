@@ -1,9 +1,13 @@
 import express from "express";
-import { createTestimonial, getTestimonial } from "../controllers/testimonialController.js";
+import { addTestimonial, createTestimonial, deleteTestimonial, getTestimonial, updateTestimonial } from "../controllers/testimonialController.js";
 
 const testimonialRouter = express.Router();
 
 testimonialRouter.post("/", createTestimonial);
 testimonialRouter.get("/", getTestimonial);
+testimonialRouter.post("/user", addTestimonial);
+testimonialRouter.put("/:id", updateTestimonial);
+testimonialRouter.delete("/:id", deleteTestimonial);
+
 
 export default testimonialRouter;

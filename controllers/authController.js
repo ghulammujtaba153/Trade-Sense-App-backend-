@@ -71,6 +71,8 @@ export const login = async (req, res) => {
     // Don't send password back
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
+    userWithoutPassword.password=password
+
 
     res.status(200).json({ 
       token,
@@ -126,7 +128,7 @@ export const updateUser = async (req, res) => {
 
   try {
 
-    console.log("registering user", req.body);
+    console.log("updating user", req.body);
 
     if (!name || !email || !phone) {
       return res.status(400).json({ message: "Please provide all fields" });
@@ -147,11 +149,19 @@ export const updateUser = async (req, res) => {
       data.role = role;
     }
 
-    if (gender, ageRange, goals, choosenArea, questionnaireAnswers) {
+    if (gender, ageRange) {
       data.gender = gender;
       data.ageRange = ageRange;
+    }
+    if(goals){
       data.goals = goals;
+    }
+
+    if(choosenArea){
       data.choosenArea = choosenArea;
+    }
+
+    if(questionnaireAnswers){
       data.questionnaireAnswers = questionnaireAnswers;
     }
     const user = await User.findByIdAndUpdate(req.params.id, data, { new: true });
