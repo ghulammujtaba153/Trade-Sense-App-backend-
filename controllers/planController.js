@@ -22,11 +22,7 @@ export const createPlan = async (req, res) => {
             if (!couponCode || discountPercentage == null) {
                 return res.status(400).json({ error: 'Coupon code and discount percentage are required for coupons' });
             }
-        } else {
-            if (!subCategory) {
-                return res.status(400).json({ error: 'Sub category is required for membership/plans' });
-            }
-        }
+        } 
 
         // Create the plan
         const plan = await Plan.create({

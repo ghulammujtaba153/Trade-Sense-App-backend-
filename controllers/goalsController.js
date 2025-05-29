@@ -78,7 +78,10 @@ export const goalAnalysis = async (req, res) => {
         const completedGoals = await Goals.find({ status: 'completed' });
         const activeGoals = await Goals.find({ status: 'active' });
 
-        return res.status(200).json({ completedGoals, activeGoals });
+        const totalGoals= await Goals.countDocuments({});
+
+
+        return res.status(200).json({ completedGoals, activeGoals, totalGoals });
 
     } catch (error) {
         console.error("Error analyzing goals:", error.message);

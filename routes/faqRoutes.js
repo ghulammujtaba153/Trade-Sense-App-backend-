@@ -9,6 +9,6 @@ faqRouter.get('/', getFaqs);
 
 faqRouter.delete('/:id', deleteFaq);
 
-faqRouter.patch('/:id', updateFaq)
+faqRouter.put('/:id', updateFaq)
 
 export default faqRouter
