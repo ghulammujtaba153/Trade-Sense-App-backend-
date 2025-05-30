@@ -1,5 +1,7 @@
 import express from 'express';
 import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, register, setupProfile, updateCategories, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
+import passport from 'passport';
+
 
 const authRouter = express.Router();
 
@@ -33,6 +35,23 @@ authRouter.patch("/users/:id/status", updateStatus)
 // forget password
 authRouter.post("/forget-password/email", forgotPassword);
 authRouter.patch("/forget-password/create/new", updatePassword);
+
+
+
+authRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+
+
+authRouter.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: false
+  }),
+  (req, res) => {
+    const token = req.user.token; 
+    res.redirect(`http://localhost:3000/home?token=${token}`);
+  }
+);
 
 
 export default authRouter;

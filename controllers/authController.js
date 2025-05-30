@@ -165,6 +165,8 @@ export const updateUser = async (req, res) => {
       data.questionnaireAnswers = questionnaireAnswers;
     }
     const user = await User.findByIdAndUpdate(req.params.id, data, { new: true });
+    delete user.password;
+    user.password=password
 
     res.status(201).json({ user });
   } catch (error) {
