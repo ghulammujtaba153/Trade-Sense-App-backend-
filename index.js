@@ -43,6 +43,19 @@ app.use(passport.initialize());
 // app.use(passport.session());
 
 
+app.use(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: false
+  }),
+  (req, res) => {
+    const token = req.user.token; 
+    res.redirect(`http://localhost:3000/home?token=${token}`);
+  }
+);
+
+
 connectDB();
 
 app.use('/api/auth', authRouter);
@@ -70,17 +83,7 @@ app.use("/api/delivered/notifications", deliveredNotificationRouter)
 
 
 
-authRouter.get(
-  '/auth/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/login',
-    session: false
-  }),
-  (req, res) => {
-    const token = req.user.token; 
-    res.redirect(`http://localhost:3000/home?token=${token}`);
-  }
-);
+
 
 app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port http://localhost:${process.env.PORT || 5000}`);

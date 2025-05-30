@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
       type: Number,
-      required: true,
       unique: true,
       minLength: 10,
       maxLength: 15
@@ -33,7 +32,6 @@ const userSchema = new mongoose.Schema({
     },
     password: {
       type: String,
-      required: true
     },
     role: {
       type: String,
@@ -63,6 +61,13 @@ const userSchema = new mongoose.Schema({
     categories: {
       type: [String],
       default: []
+    },
+    isGoogleUse:{
+      type: Boolean,
+      default: false
+    },
+    googleId: {
+      type: String
     },
     status: {
       type: String,
