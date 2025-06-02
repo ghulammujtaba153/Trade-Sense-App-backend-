@@ -49,7 +49,7 @@ authRouter.get(
   }),
   (req, res) => {
     const token = req.user.token; 
-    res.redirect(`http://localhost:3000/home?token=${token}`);
+    res.redirect(`${process.env.CLIENT_URL}/home?token=${token}`);
   }
 );
 

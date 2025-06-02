@@ -82,8 +82,7 @@ export const getRatings = async (req, res) => {
 
 export const getEnrollmentGrowth = async (req, res) => {
     try {
-        const enrollments = await Enrollment.find().select("enrolledAt");
-        // console.log(enrollments);
+        const enrollments = await Enrollment.find()
         res.status(200).json(enrollments);
 
     } catch (error) {

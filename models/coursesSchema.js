@@ -26,19 +26,6 @@ const courseSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    modules: [
-        {
-            title: {
-                type: String,
-            },
-            content: {
-                type: String,
-            },
-            url: {
-                type: String,
-            }
-        }
-    ],
     isPremium: { type: Boolean, default: false },
     certificateAvailable: { type: Boolean, default: false },
     status: {

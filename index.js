@@ -26,6 +26,8 @@ import ResourseProgressRouter from './routes/resourceProgressRoutes.js';
 import deliveredNotificationRouter from './routes/deliveredNotificationRoutes.js';
 import configureGoogleAuth from './services/googleAuth.js';
 import passport from 'passport';
+import favouriteRouter from './routes/favouriteRoutes.js';
+import courseModuleRouter from './routes/courseModuleRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -51,7 +53,7 @@ app.use(
   }),
   (req, res) => {
     const token = req.user.token; 
-    res.redirect(`http://localhost:3000/home?token=${token}`);
+    res.redirect(`${process.env.CLIENT_URL}/home?token=${token}`);
   }
 );
 
@@ -61,6 +63,7 @@ connectDB();
 app.use('/api/auth', authRouter);
 app.use("/api/otp", otpRouter);
 app.use("/api/courses", courseRouter);
+app.use("/api/modules", courseModuleRouter)
 app.use("/api/plans", planRouter);
 app.use("/api/enrollments", enrollmentRouter);
 app.use("/api/goals", goalsRouter);
@@ -79,6 +82,8 @@ app.use("/api/terms", termsRouter);
 app.use("/api/faq", faqRouter);
 app.use("/api/resource/progress", ResourseProgressRouter);
 app.use("/api/delivered/notifications", deliveredNotificationRouter)
+app.use("/api/favorites", favouriteRouter)
+
 
 
 

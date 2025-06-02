@@ -4,9 +4,17 @@ export const createProgress = async (req, res) => {
     try {
         const { userId, resourceId, currentTime } = req.body;
 
-        const progress = await ResourceProgress.create({ userId, resourceId, progress });
+        const progress = await ResourceProgress.findOne({ userId, resourceId });
 
-        res.status(201).json(progress);
+        if (progress) {
+            progress.currentTime = currentTime;
+            await progress.save();
+            return res.status(200).json(progress);
+        }
+
+        const newProgress = await ResourceProgress.create({ userId, resourceId, currentTime });
+
+        res.status(201).json(newProgress);
 
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -15,10 +23,10 @@ export const createProgress = async (req, res) => {
 
 
 export const getProgress = async (req, res) => {
-    const { userId, resourceId } = req.body;
+    const { id } = req.params;
 
     try {
-        const progress = await ResourceProgress.findOne({ userId, resourceId });
+        const progress = await ResourceProgress.find({ userId : id });
 
         res.status(200).json(progress);
 
@@ -27,13 +35,3 @@ export const getProgress = async (req, res) => {
     }
 }
 
-export const updateProgress = async (req, res) => {
-    const { userId, resourceId, currentTime } = req.body;
-    try {
-        const progress = await ResourceProgress.findOneAndUpdate({ userId, resourceId }, { progress: currentTime }, { new: true });
-
-        res.status(200).json(progress);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}

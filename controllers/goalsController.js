@@ -1,11 +1,11 @@
 import Goals from "../models/goalsSchema.js";
 
 export const createGoal = async (req, res) => {
-    const { userId, title, description, frequency, targetDate } = req.body;
+    const { userId, title, description, status, frequency, targetDate } = req.body;
 
     try {
 
-        const goal = await Goals.create({ userId, title, description, frequency, targetDate });
+        const goal = await Goals.create({ userId, title, description, status, frequency, targetDate });
 
         res.status(201).json(goal);
     } catch (error) {
@@ -47,13 +47,13 @@ export const deleteGoal = async (req, res) => {
 
 export const updateGoal = async (req, res) => {
     const { id } = req.params;
-    const { title, description, frequency, targetDate, reminders, status } = req.body;
+    const { title, description, frequency, targetDate, status } = req.body;
 
     try {
-        const goal = await Goals.findByIdAndUpdate(id, { title, description, frequency, targetDate, reminders, status }, { new: true });
+        const goal = await Goals.findByIdAndUpdate(id, { title, description, frequency, targetDate, status }, { new: true });
         res.status(200).json(goal);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating goal' });
+        res.status(500).json({ error: error.message });
     }
 }
 
