@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
 const onBoardingQuestionnaireSchema = new mongoose.Schema({
-  question: {
+  type: {
     type: String,
+    enum: ["goals", "chosen-area"],
     required: true
   },
-  options: {
-    type: [String],
+  image:{
+    type: String
+  },
+  text: {
+    type: String,
     required: true,
   },
 });
