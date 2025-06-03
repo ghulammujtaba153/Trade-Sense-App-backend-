@@ -28,6 +28,7 @@ import configureGoogleAuth from './services/googleAuth.js';
 import passport from 'passport';
 import favouriteRouter from './routes/favouriteRoutes.js';
 import courseModuleRouter from './routes/courseModuleRoutes.js';
+import habitLogRouter from './routes/habbitLogRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -68,6 +69,7 @@ app.use("/api/plans", planRouter);
 app.use("/api/enrollments", enrollmentRouter);
 app.use("/api/goals", goalsRouter);
 app.use("/api/habbits", habbitRouter);
+app.use("/api/habitlogs", habitLogRouter);
 app.use("/api/ratings", ratingRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/resources", resourceRouter);
