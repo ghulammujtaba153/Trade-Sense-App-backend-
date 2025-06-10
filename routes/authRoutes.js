@@ -38,7 +38,16 @@ authRouter.patch("/forget-password/create/new", updatePassword);
 
 
 
-authRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+// authRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+authRouter.get('/google', (req, res, next) => {
+  const { platform } = req.query;
+  const redirect = `/google?state=${platform}`;
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false,
+    state: platform // store platform info in state
+  })(req, res, next);
+});
 
 
 authRouter.get(

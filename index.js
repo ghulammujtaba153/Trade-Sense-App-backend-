@@ -54,6 +54,13 @@ app.use(
   }),
   (req, res) => {
     const token = req.user.token; 
+    
+    const platform = req.query.state;
+
+    if (platform === 'mobile') {
+      return res.redirect(`myapp://auth/google/callback?token=${token}`);
+    }
+
     res.redirect(`${process.env.CLIENT_URL}/home?token=${token}`);
   }
 );

@@ -1,11 +1,25 @@
 import otpGenerator from 'otp-generator';
 import nodemailer from 'nodemailer';
 import Otp from '../models/otpSchema.js'
+import User from '../models/userSchema.js';
 
 export const sendOtp = async (req, res) => {
-  const { email } = req.body;
+  const { email, registeration, forgetPassword } = req.body;
 
   if (!email) return res.status(400).json({ message: "Email is required" });
+
+  if(registeration){
+    const existingUser = await User.findOne({ email});
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
+  } else if(forgetPassword){
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ message: "User does not exist" });
+    }
+  }
+
 
   try {
     const otpCode = otpGenerator.generate(4, { upperCaseAlphabets: false, specialChars: false });

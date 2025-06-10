@@ -17,9 +17,14 @@ export const register = async (req, res) => {
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email, isDeleted: false });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
+    }
+
+    const deletedUser = await User.findOne({ email, isDeleted: true });
+    if (deletedUser) {
+      return res.status(400).json({ message: "User deleted by the admin, use different mail" });
     }
     const data={}
     data.name = name;
@@ -50,13 +55,14 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email , isDeleted: false});
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.isDeleted) {
-      return res.status(401).json({ message: "User is deleted" });
+
+    if(user.status !== "active"){
+      return res.status(401).json({ message: "User is suspended by the admin" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
