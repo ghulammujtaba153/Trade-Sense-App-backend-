@@ -21,7 +21,13 @@ export const createOnBoardingQuestionnaire = async (req, res) => {
 
 
 export const getOnBoardingQuestionnaire = async (req, res) => {
+    const {type} =req.query;
+
     try {
+        if(type){
+            const onBoarding = await onBoardingQuestionnaire.find({type:type});
+            return res.status(200).json(onBoarding);
+        }
         const onBoarding = await onBoardingQuestionnaire.find();
         res.status(200).json(onBoarding);
     } catch (error) {
