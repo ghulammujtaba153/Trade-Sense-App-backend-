@@ -88,6 +88,7 @@ export const getAllCourses = async (req, res) => {
 
 export const getCourse = async (req, res) => {
   const { id } = req.params;
+
   try {
     const courses = await Course.aggregate([
       { $match: { isDeleted: false, _id: new mongoose.Types.ObjectId(id) } },
@@ -115,12 +116,11 @@ export const getCourse = async (req, res) => {
       {
         $lookup: {
           from: "plans",
-          localField: "plan",
+          localField: "plan", // assuming `plan` is now an array
           foreignField: "_id",
-          as: "plan",
+          as: "plans", // rename to `plans` (plural)
         },
       },
-      { $unwind: { path: "$plan", preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -132,15 +132,16 @@ export const getCourse = async (req, res) => {
       },
     ]);
 
-    if (!courses || courses.length === 0) {
+    if (!courses || courses.length === 0) {``
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.status(200).json(courses);
+    res.status(200).json(courses[0]); // send single course object
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const updateCourse = async (req, res) => {
   try {
