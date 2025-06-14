@@ -28,6 +28,10 @@ const courseSchema = new mongoose.Schema({
     },
     isPremium: { type: Boolean, default: false },
     certificateAvailable: { type: Boolean, default: false },
+    price:{
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
         enum: ['published', 'archived'],

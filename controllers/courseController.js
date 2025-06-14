@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 
 export const createCourse = async (req, res) => {
   try {
-    const { creator, title, thumbnail, description, plan, isPremium } =
+    const { creator, title, thumbnail, description, plan, isPremium, price } =
       req.body;
     const course = await Course.create({
       creator,
@@ -13,6 +13,7 @@ export const createCourse = async (req, res) => {
       description,
       plan,
       isPremium,
+      price,
     });
     res.status(201).json(course);
   } catch (error) {
