@@ -87,6 +87,9 @@ export const getAllCourses = async (req, res) => {
 };
 
 
+
+
+
 export const getCourse = async (req, res) => {
   const { id } = req.params;
 
