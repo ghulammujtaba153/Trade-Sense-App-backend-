@@ -19,7 +19,7 @@ export const createEnrollment = async (req, res) => {
     }
 
 
-    const checkEnrollment = await Enrollment.findOne({ student: studentId, course: courseId });
+    const checkEnrollment = await Enrollment.findOne({ student: studentId, course: courseId, status: 'active' });
 
     if (checkEnrollment) {
       return res.status(400).json({ message: 'Enrollment already exists' });

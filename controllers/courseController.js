@@ -1,7 +1,6 @@
 import Course from "../models/coursesSchema.js";
 import mongoose from "mongoose";
 
-
 export const createCourse = async (req, res) => {
   try {
     const { creator, title, thumbnail, description, plan, isPremium, price } =
@@ -22,7 +21,6 @@ export const createCourse = async (req, res) => {
 };
 
 export const getAllCourses = async (req, res) => {
-
   try {
     const courses = await Course.aggregate([
       { $match: { isDeleted: false } },
@@ -86,17 +84,17 @@ export const getAllCourses = async (req, res) => {
   }
 };
 
-
-
-
-
 export const getCourse = async (req, res) => {
   const { id } = req.params;
 
   try {
     const courses = await Course.aggregate([
-      { $match: { isDeleted: false, _id: new mongoose.Types.ObjectId(id) } },
-
+      {
+        $match: {
+          isDeleted: false,
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -105,8 +103,12 @@ export const getCourse = async (req, res) => {
           as: "creator",
         },
       },
-      { $unwind: { path: "$creator", preserveNullAndEmptyArrays: true } },
-
+      {
+        $unwind: {
+          path: "$creator",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -115,37 +117,73 @@ export const getCourse = async (req, res) => {
           as: "instructor",
         },
       },
-      { $unwind: { path: "$instructor", preserveNullAndEmptyArrays: true } },
-
+      {
+        $unwind: {
+          path: "$instructor",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
       {
         $lookup: {
           from: "plans",
-          localField: "plan", // assuming `plan` is now an array
+          localField: "plan",
           foreignField: "_id",
-          as: "plans", // rename to `plans` (plural)
+          as: "plans",
         },
       },
-
       {
         $lookup: {
           from: "coursemodules",
-          localField: "_id",
-          foreignField: "courseID",
+          let: { courseId: "$_id" },
+          pipeline: [
+            {
+              $lookup: {
+                from: "favourites",
+                let: { moduleId: "$_id" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ["$itemId", "$$moduleId"],
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      userId: 1,
+                    },
+                  },
+                ],
+                as: "favourites",
+              },
+            },
+            {
+              $addFields: {
+                favourites: {
+                  $map: {
+                    input: "$favourites",
+                    as: "f",
+                    in: "$$f.userId",
+                  },
+                },
+              },
+            },
+          ],
           as: "courseModules",
         },
       },
     ]);
 
-    if (!courses || courses.length === 0) {``
+    if (!courses || courses.length === 0) {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    res.status(200).json(courses[0]); // send single course object
+    res.status(200).json(courses[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 export const updateCourse = async (req, res) => {
   try {

@@ -5,6 +5,10 @@ export const createFavourite= async(req, res)=>{
     console.log(userId, itemId, itemType)
 
     try {
+        const check = await Favourite.findOne({userId, itemId});
+        if(check){
+            return res.status(400).json({error: "Already Favourited"});
+        }
         const favourite = await Favourite.create({userId, itemId, itemType});
         res.status(201).json(favourite);
     } catch (error) {
