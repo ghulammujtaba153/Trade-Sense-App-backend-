@@ -29,6 +29,7 @@ import passport from 'passport';
 import favouriteRouter from './routes/favouriteRoutes.js';
 import courseModuleRouter from './routes/courseModuleRoutes.js';
 import habitLogRouter from './routes/habbitLogRoutes.js';
+import configRouter from './routes/appConfigRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -92,6 +93,7 @@ app.use("/api/faq", faqRouter);
 app.use("/api/resource/progress", ResourseProgressRouter);
 app.use("/api/delivered/notifications", deliveredNotificationRouter)
 app.use("/api/favorites", favouriteRouter)
+app.use("/api/config", configRouter)
 
 
 

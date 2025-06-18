@@ -6,6 +6,14 @@ const mindfulResourceSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  description:{
+    type: String,
+    required: true,
+  },
+  thumbnail:{
+    type: String,
+    required: true
+  },
   type: {
     type: String,
     enum: ['audio', 'video'],

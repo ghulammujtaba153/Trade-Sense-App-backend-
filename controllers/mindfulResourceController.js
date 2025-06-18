@@ -2,12 +2,14 @@ import express from "express";
 import MindfulResource from "../models/mindfulResourceSchema.js";
 
 export const createMindfulResource = async (req, res) => {
-    const { title, type, url, category, pillar, isPremium, tags} = req.body;
+    const { title, description, thumbnail, type, url, category, pillar, isPremium, tags} = req.body;
 
     
     try {
         const mindfulResource = new MindfulResource({
             title,
+            description,
+            thumbnail,
             type,
             pillar,
             category,
@@ -67,13 +69,15 @@ export const deleteResource = async (req, res) => {
 
   export const updateResource = async (req, res) => {
     const { id } = req.params;
-    const { title, type, url, pillar, category, tags, isPremium, duration } = req.body;
+    const { title, description, thumbnail, type, url, pillar, category, tags, isPremium, duration } = req.body;
   
     try {
       const resource = await MindfulResource.findByIdAndUpdate(
         id,
         {
           title,
+          description,
+          thumbnail,
           type,
           pillar,
           category,
