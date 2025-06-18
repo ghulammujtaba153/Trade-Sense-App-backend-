@@ -2,10 +2,12 @@ import PillarsCategories from "../models/pillarsCategoriesSchema.js";
 
 
 export const createPillarsCategories = async (req, res) => {
-    const {name, categories} = req.body;
+    const {name, image, categories} = req.body;
+
+    console.log("re", req.body)
 
     try {
-        const pillarsCategories = new PillarsCategories({name, categories});
+        const pillarsCategories = new PillarsCategories({name, image, categories});
         await pillarsCategories.save();
         res.status(201).json(pillarsCategories);
         
@@ -27,12 +29,12 @@ export const getAllPillarsCategories = async (req, res) => {
 
 export const updatePillarsCategories = async (req, res) => {
     const { id } = req.params;
-    const { name, categories } = req.body;
+    const { name, image, categories } = req.body;
 
     try {
         const updatedPillarsCategories = await PillarsCategories.findByIdAndUpdate(
             id,
-            { name, categories },
+            { name, image, categories },
             { new: true }
         );
         res.status(200).json(updatedPillarsCategories);
