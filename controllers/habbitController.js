@@ -22,6 +22,7 @@ export const createHabbit = async (req, res) => {
 
 export const getHabbitsByUser = async (req, res) => {
   const { id } = req.params;
+  
 
   try {
     const habbits = await Habbit.aggregate([
@@ -154,14 +155,17 @@ export const getHabbitsByUser = async (req, res) => {
 
 export const deleteHabbit = async (req, res) => {
     const { id } = req.params;
+    console.log("id", id);
 
     try {
-        const habbit = await Habbit.findByIdAndUpdate(id, { isDeleted: true }).p;
+        const habbit = await Habbit.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
         res.status(200).json(habbit);
     } catch (error) {
+        console.error("Error deleting habbit:", error);
         res.status(500).json({ error: 'Error deleting habbit' });
     }
-}
+};
+
 
 export const updateHabbit = async (req, res) => {
     const { id } = req.params;
