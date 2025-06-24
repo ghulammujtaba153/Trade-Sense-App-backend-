@@ -14,7 +14,7 @@ export const create = async (req, res) => {
     // Send message to chat API
     const apiRes = await axios.post("http://13.48.23.117:8000/chat", { session_id, message });
 
-    const botResponse = apiRes.data.response; // extract actual response
+    const botResponse = apiRes.data.response; 
 
     
     const bot = new Bot({ sessionId: session_id, message, response: botResponse });
