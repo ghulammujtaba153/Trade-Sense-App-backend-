@@ -31,6 +31,8 @@ import courseModuleRouter from './routes/courseModuleRoutes.js';
 import habitLogRouter from './routes/habbitLogRoutes.js';
 import configRouter from './routes/appConfigRoutes.js';
 import affiliateRouter from './routes/affiliateRoutes.js';
+import sessionRouter from './routes/sessionRoutes.js';
+import botRouter from './routes/botRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -96,6 +98,8 @@ app.use("/api/delivered/notifications", deliveredNotificationRouter)
 app.use("/api/favorites", favouriteRouter)
 app.use("/api/config", configRouter)
 app.use("/api/affiliate", affiliateRouter)
+app.use("/api/session", sessionRouter)
+app.use("/api/bot", botRouter)
 
 
 
