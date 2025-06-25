@@ -18,6 +18,10 @@ const courseModuleSchema = new mongoose.Schema({
     url:{
         type: String,
         required: true
+    },
+    duration: {
+        type: Number,
+        required: true
     }
 })
 

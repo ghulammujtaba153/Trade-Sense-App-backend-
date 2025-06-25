@@ -5,6 +5,6 @@ import { createAffiliate, getAffiliates } from "../controllers/affiliateControll
 const affiliateRouter = express.Router()
 
 affiliateRouter.post("/", createAffiliate);
-affiliateRouter.get("/", getAffiliates);
+affiliateRouter.get("/:id", getAffiliates);
 
 export default affiliateRouter
