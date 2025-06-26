@@ -32,5 +32,7 @@ jobs:
 
           # Build and run the updated app
           docker build -t trade-sense-app .
-          docker run -d -p 5000:5000 --env-file .env --name trade-sense-container trade-sense-app
+
+          docker run -d -p 127.0.0.1:5000:5000 --env-file .env --name trade-sense-container trade-sense-app
+
         EOF
