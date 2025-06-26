@@ -1,0 +1,36 @@
+name: Deploy trading_app_backend to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          # Go to your project directory
+          cd trading_app_backend
+
+          # Pull the latest code
+          git pull origin main
+
+          # Stop and remove the running container if it exists
+          docker rm -f trade-sense-container || true
+
+          # Build and run the updated app
+          docker build -t trade-sense-app .
+          docker run -d -p 5000:5000 --env-file .env --name trade-sense-container trade-sense-app
+        EOF

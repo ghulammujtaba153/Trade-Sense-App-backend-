@@ -364,9 +364,10 @@ export const makeAffiliate = async (req, res) => {
     }
 
     user.isAffiliate = true;
-    user.affiliateCode = await generateUniqueAffiliateCode();
+    const affiliateCode = await generateUniqueAffiliateCode();
+    user.affiliateCode = affiliateCode
     await user.save();
-    res.status(200).json({ message: "Affiliate status updated successfully" });
+    res.status(200).json({ affiliateCode: affiliateCode });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
