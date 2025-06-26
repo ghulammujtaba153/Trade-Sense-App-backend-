@@ -22,7 +22,7 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           # Go to your project directory
-          cd trading_app_backend
+          cd Trade-Sense-App-backend-
 
           # Pull the latest code
           git pull origin main
