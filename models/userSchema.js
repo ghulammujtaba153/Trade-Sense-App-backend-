@@ -41,6 +41,14 @@ const userSchema = new mongoose.Schema({
       enum: ["beginner", "intermediate", "advanced"],
       default: "beginner"
     },
+    isAffiliate:{
+      type: Boolean,
+      default: false
+    },
+    affiliateCode:{
+      type: String,
+      default: null
+    },
     goals:[
       {
         type: String,

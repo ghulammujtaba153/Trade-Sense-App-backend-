@@ -32,6 +32,7 @@ import configRouter from './routes/appConfigRoutes.js';
 import affiliateRouter from './routes/affiliateRoutes.js';
 import sessionRouter from './routes/sessionRoutes.js';
 import botRouter from './routes/botRoutes.js';
+import problemReportRouter from './routes/problemReportRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -98,6 +99,7 @@ app.use("/api/config", configRouter)
 app.use("/api/affiliate", affiliateRouter)
 app.use("/api/session", sessionRouter)
 app.use("/api/bot", botRouter)
+app.use("/api/problem", problemReportRouter)
 
 
 

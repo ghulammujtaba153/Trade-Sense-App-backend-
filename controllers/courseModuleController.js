@@ -5,7 +5,7 @@ import Course from "../models/coursesSchema.js";
 export const createCourseModule = async (req, res) => {
   const {courseID, title, description, url, duration} = req.body 
     try {
-        const newCourseModule = await CourseModule.create({courseID, title, description, url, duration});
+        const newCourseModule = await CourseModule.create(req.body);
         const course = await Course.findById(req.body.courseID);
         course.duration+= duration;
         await course.save();

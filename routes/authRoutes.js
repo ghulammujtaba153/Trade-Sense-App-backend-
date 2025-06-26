@@ -1,5 +1,5 @@
 import express from 'express';
-import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, register, setupProfile, updateCategories, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
+import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, makeAffiliate, register, setupProfile, updateCategories, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
 import passport from 'passport';
 
 
@@ -61,6 +61,9 @@ authRouter.get(
     res.redirect(`${process.env.CLIENT_URL}/home?token=${token}`);
   }
 );
+
+
+authRouter.get('/affiliate/:id', makeAffiliate);
 
 
 export default authRouter;

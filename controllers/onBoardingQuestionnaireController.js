@@ -2,17 +2,7 @@ import onBoardingQuestionnaire from "../models/onBoardingQuestionnaireSchema.js"
 
 export const createOnBoardingQuestionnaire = async (req, res) => {
     try {
-        const { type, image, text } = req.body;
-        console.log(req.body);
-
-        const data={};
-        data.type=type;
-        data.text=text;
-        if(image){
-            data.image=image
-        }
-
-        const onBoarding = await onBoardingQuestionnaire.create(data);
+        const onBoarding = await onBoardingQuestionnaire.create(req.body);
         res.status(201).json(onBoarding);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -21,15 +11,11 @@ export const createOnBoardingQuestionnaire = async (req, res) => {
 
 
 export const getOnBoardingQuestionnaire = async (req, res) => {
-    const {type} =req.query;
 
     try {
-        if(type){
-            const onBoarding = await onBoardingQuestionnaire.find({type:type});
-            return res.status(200).json(onBoarding);
-        }
-        const onBoarding = await onBoardingQuestionnaire.find();
-        res.status(200).json(onBoarding);
+        const onBoarding = await onBoardingQuestionnaire.find({isDeleted: false});
+        return res.status(200).json(onBoarding);
+        
     } catch (error) {
         res.status(500).json({ error: error.message }); 
     }
@@ -38,15 +24,7 @@ export const getOnBoardingQuestionnaire = async (req, res) => {
 
 export const updateOnBoardingQuestionnaire = async (req, res) => {
     try {
-        const { type, image, text } = req.body;
-
-        const data={};
-        data.type=type;
-        data.text=text;
-        if(image){
-            data.image=image
-        }
-        const onBoarding = await onBoardingQuestionnaire.findByIdAndUpdate(req.params.id, data, { new: true });
+        const onBoarding = await onBoardingQuestionnaire.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json(onBoarding);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -56,7 +34,7 @@ export const updateOnBoardingQuestionnaire = async (req, res) => {
 
 export const deleteOnBoardingQuestionnaire = async (req, res) => {
     try {
-        await onBoardingQuestionnaire.findByIdAndDelete(req.params.id);
+        await onBoardingQuestionnaire.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true });
         res.status(200).json({ message: "Onboarding Questionnaire deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });

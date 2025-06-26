@@ -1,13 +1,11 @@
 import mongoose from "mongoose";
 
-const onBoardingQuestionnaireSchema = new mongoose.Schema({
-  type: {
+const { Schema, model, models } = mongoose;
+
+const questionSchema = new Schema({
+  image: {
     type: String,
-    enum: ["goals", "chosen-area"],
-    required: true
-  },
-  image:{
-    type: String
+    default: "", 
   },
   text: {
     type: String,
@@ -15,9 +13,35 @@ const onBoardingQuestionnaireSchema = new mongoose.Schema({
   },
 });
 
-const OnBoardingQuestionnaire = mongoose.model(
-  "OnBoardingQuestionnaire",
-  onBoardingQuestionnaireSchema
+const onBoardingQuestionnaireSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    subTitle: {
+      type: String,
+      required: true,
+    },
+    images: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    questions: [questionSchema],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true, 
+  }
 );
+
+// Avoid overwrite in dev/hot-reload
+const OnBoardingQuestionnaire =
+  models.OnBoardingQuestionnaire ||
+  model("OnBoardingQuestionnaire", onBoardingQuestionnaireSchema);
 
 export default OnBoardingQuestionnaire;

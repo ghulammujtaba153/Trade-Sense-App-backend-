@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -320,3 +321,54 @@ export const updatePassword = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+
+
+
+
+// Generate a random alphanumeric code (e.g. 8 characters)
+const generateRandomCode = () => {
+  return crypto.randomBytes(4).toString('hex').toUpperCase(); // 8-character hex
+};
+
+// Check if code already exists
+const isCodeUnique = async (code) => {
+  const existing = await User.findOne({ affiliateCode: code });
+  return !existing;
+};
+
+// Generate unique code
+const generateUniqueAffiliateCode = async () => {
+  let code;
+  let attempts = 0;
+
+  do {
+    code = generateRandomCode();
+    attempts++;
+    if (attempts > 10) throw new Error('Failed to generate unique code');
+  } while (!(await isCodeUnique(code)));
+
+ 
+
+  return code;
+};
+
+
+export const makeAffiliate = async (req, res) => {
+  const {id} = req.params;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isAffiliate = true;
+    user.affiliateCode = await generateUniqueAffiliateCode();
+    await user.save();
+    res.status(200).json({ message: "Affiliate status updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+} 
+
