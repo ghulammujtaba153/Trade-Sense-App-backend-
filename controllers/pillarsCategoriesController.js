@@ -27,6 +27,18 @@ export const getAllPillarsCategories = async (req, res) => {
 }
 
 
+export const recommendPillarsCategories = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const pillarsCategories = await PillarsCategories.find();
+        res.status(200).json(pillarsCategories);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
 export const updatePillarsCategories = async (req, res) => {
     const { id } = req.params;
     const { name, image, categories } = req.body;
@@ -70,3 +82,6 @@ export const getAllCategories = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+
+

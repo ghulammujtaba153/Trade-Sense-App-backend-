@@ -43,6 +43,23 @@ export const getMindfulResource = async (req, res) => {
 };
 
 
+export const recommendMindfulResource = async (req, res) => {
+  const { pillar, category, type } = req.query;
+
+  try {
+    const query = { isDeleted: false };
+
+    if (pillar) query.pillar = pillar;
+    if (category) query.category = category;
+    if (type) query.type = type;
+
+    const mindfulResources = await MindfulResource.find(query);
+    res.status(200).json(mindfulResources);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 export const deleteResource = async (req, res) => {
     const { id } = req.params;

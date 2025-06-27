@@ -49,16 +49,8 @@ const userSchema = new mongoose.Schema({
       type: String,
       default: null
     },
-    goals:[
-      {
-        type: String,
-      }
-    ],
-    choosenArea: [
-      {
-        type: String,
-      }
-    ],
+    goals:[],
+    onboarding:[],
     questionnaireAnswers: {
       type: Map,
       of: [String],

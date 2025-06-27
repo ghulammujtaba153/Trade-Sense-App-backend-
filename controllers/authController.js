@@ -92,7 +92,9 @@ export const login = async (req, res) => {
 
 export const setupProfile = async (req, res) => {
   const { id } = req.params;
-  const { gender, ageRange, goals, choosenArea } = req.body;
+  const { gender, ageRange, goals, onboarding } = req.body;
+
+  console.log(req.body)
 
   try {
     const user = await User.findById(id);
@@ -106,10 +108,10 @@ export const setupProfile = async (req, res) => {
     user.gender = gender;
     user.ageRange = ageRange;
     user.goals = goals;
-    user.choosenArea = choosenArea;
+    user.onboarding = onboarding;
     await user.save();
 
-    res.status(200).json({ message: "Profile updated successfully" });
+    res.status(200).json({ user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
