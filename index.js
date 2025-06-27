@@ -104,6 +104,9 @@ app.use("/api/problem", problemReportRouter)
 
 
 
+app.use("/", (req, res) => {
+    res.send("Server is running");
+});
 
 
 
