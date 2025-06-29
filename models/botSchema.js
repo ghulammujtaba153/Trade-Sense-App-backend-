@@ -1,6 +1,11 @@
 import mongoose from 'mongoose'
 
 const botSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     sessionId: {
         type: String,
         required: true
@@ -12,6 +17,10 @@ const botSchema = new mongoose.Schema({
     response: {
         type: String,
         required: true
+    },
+    createdAt: {
+    type: Date,
+    default: Date.now
     }
 })
 

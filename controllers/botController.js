@@ -4,7 +4,7 @@ import Bot from "../models/botSchema.js";
 
 
 export const create = async (req, res) => {
-  const { session_id, message } = req.body;
+  const { userId, session_id, message } = req.body;
 
   if (!session_id || !message) {
     return res.status(400).json({ error: "session_id and message are required" });
@@ -17,7 +17,7 @@ export const create = async (req, res) => {
     const botResponse = apiRes.data.response; 
 
     
-    const bot = new Bot({ sessionId: session_id, message, response: botResponse });
+    const bot = new Bot({ userId, sessionId: session_id, message, response: botResponse });
     await bot.save();
     console.log("chat save", bot);
     
@@ -25,5 +25,19 @@ export const create = async (req, res) => {
   } catch (error) {
     console.error("Chat error:", error.message);
     res.status(500).json({ error: "Something went wrong while processing the chat" });
+  }
+};
+
+
+
+export const getTodayChat = async (req, res) => {
+  const {id} = req.params
+
+  try {
+    const bots = await Bot.find({ userId: id, createdAt: { $gte: new Date().setHours(0, 0, 0, 0) } });
+    res.status(200).json(bots);
+  } catch (error) {
+    console.error("Error fetching today's bots:", error);
+    res.status(500).json({ error: "Failed to fetch today's bots" });
   }
 };
