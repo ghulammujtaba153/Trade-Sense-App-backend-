@@ -33,6 +33,8 @@ import affiliateRouter from './routes/affiliateRoutes.js';
 import sessionRouter from './routes/sessionRoutes.js';
 import botRouter from './routes/botRoutes.js';
 import problemReportRouter from './routes/problemReportRoutes.js';
+import affiliateRequestRouter from './routes/affiliateRequestsRoutes.js';
+
 
 const app = express();
 dotenv.config();
@@ -100,6 +102,7 @@ app.use("/api/affiliate", affiliateRouter)
 app.use("/api/session", sessionRouter)
 app.use("/api/bot", botRouter)
 app.use("/api/problem", problemReportRouter)
+app.use("/api/affiliate/requests", affiliateRequestRouter)
 
 
 
