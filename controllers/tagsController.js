@@ -1,3 +1,4 @@
+import OnBoardingQuestionnaire from "../models/onBoardingQuestionnaireSchema.js";
 import Tags from "../models/TagsSchema.js";
 
 
@@ -15,8 +16,14 @@ export const createTags = async (req, res) => {
 export const getTags = async (req, res) => {
     console.log("get tags");
     try {
-        const tags = await Tags.find();
-        res.status(200).json(tags);
+        const onBoarding = await OnBoardingQuestionnaire.find({ isDeleted: false });
+
+            const tags = onBoarding.flatMap(element =>
+            element.questions.map(question => question.text)
+            );
+
+            res.status(200).json(tags);
+
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
