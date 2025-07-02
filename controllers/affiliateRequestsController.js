@@ -28,6 +28,18 @@ export const createAffiliateRequest = async(req, res) => {
 }
 
 
+export const getAffiliateRequest = async (req, res) => {
+    const {id} = req.params;
+
+    try {
+        const affiliateRequests =  await AffiliateRequests.find({userId: id})
+        res.status(200).json(affiliateRequests);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
 
 export const getAffiliateRequests = async (req, res) => {
     try {

@@ -1,11 +1,13 @@
 import express from "express"
-import { createAffiliateRequest, getAffiliateRequests, updateStatus } from "../controllers/affiliateRequestsController.js"
+import { createAffiliateRequest, getAffiliateRequest, getAffiliateRequests, updateStatus } from "../controllers/affiliateRequestsController.js"
 
 
 const affiliateRequestRouter = express.Router()
 
 
 affiliateRequestRouter.post('/', createAffiliateRequest)
+
+affiliateRequestRouter.get('/:id',   getAffiliateRequest)
 
 affiliateRequestRouter.get('/get', getAffiliateRequests)
 
