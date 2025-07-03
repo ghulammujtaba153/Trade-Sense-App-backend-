@@ -1,6 +1,8 @@
 import express from "express";
 import MindfulResource from "../models/mindfulResourceSchema.js";
 import User from "../models/userSchema.js";
+import HabitLog from "../models/habitLogSchema.js";
+import { startOfWeek, endOfWeek } from 'date-fns';
 
 export const createMindfulResource = async (req, res) => {
     const { title, description, thumbnail, type, url, category, pillar, isPremium, tags} = req.body;
@@ -182,6 +184,7 @@ export const bundleResources = async (req, res) => {
 
 
 export const RandomOneAudioOneVideoResource = async (req, res) => {
+  const {id} = req.params;
   try {
     
     const audioResources = await MindfulResource.find({ type: "audio", isDeleted: false });
@@ -191,9 +194,23 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
     const videoResources = await MindfulResource.find({ type: "video", isDeleted: false });
     const randomVideo = videoResources[Math.floor(Math.random() * videoResources.length)];
 
+
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 }); 
+    const end = endOfWeek(new Date(), { weekStartsOn: 1 });     
+
+    // Find habit logs for the current week
+    const habitLogs = await HabitLog.find({
+      userId: id,
+      date: { $gte: start, $lte: end },
+    }).sort({ createdAt: -1 });
+
+
     res.status(200).json({
       audio: randomAudio || null,
       video: randomVideo || null,
+      quotation: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+      logs: habitLogs,
+
     });
   } catch (error) {
     console.error("Error fetching random resources:", error);

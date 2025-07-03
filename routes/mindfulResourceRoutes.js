@@ -16,7 +16,7 @@ resourceRouter.put("/:id", updateResource);
 resourceRouter.get("/bundle/:id", bundleResources)   
 
 
-resourceRouter.get("/random", RandomOneAudioOneVideoResource)
+resourceRouter.get("/random/:id", RandomOneAudioOneVideoResource)
 
 
 
