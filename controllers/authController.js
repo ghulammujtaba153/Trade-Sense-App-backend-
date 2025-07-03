@@ -56,11 +56,14 @@ export const registerGoogle = async (req, res) => {
   const { email , profilePic, firstName, lastName, phone } = req.body;
 
   try {
-
-    
     const existingUser = await User.findOne({ email, isDeleted: false });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+    });
+
+    res.status(200).json({ existingUser , token });
+      
     }
 
     const deletedUser = await User.findOne({ email, isDeleted: true });
