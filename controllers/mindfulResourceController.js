@@ -1,5 +1,6 @@
 import express from "express";
 import MindfulResource from "../models/mindfulResourceSchema.js";
+import User from "../models/userSchema.js";
 
 export const createMindfulResource = async (req, res) => {
     const { title, description, thumbnail, type, url, category, pillar, isPremium, tags} = req.body;
@@ -117,3 +118,58 @@ export const deleteResource = async (req, res) => {
   };
   
 
+
+  export const getBundleResource = async (req, res) => {
+  const { pillar, category, type } = req.query;
+
+  try {
+    const query = { isDeleted: false };
+
+    if (pillar) query.pillar = pillar;
+    if (category) query.category = category;
+    if (type) query.type = type;
+
+    const mindfulResources = await MindfulResource.find(query);
+    res.status(200).json(mindfulResources);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+export const bundleResources = async (req, res) => {
+  const { pillar, category, type } = req.query;
+  const { id } = req.params;
+
+  try {
+    const query = { isDeleted: false };
+
+    // Get user goals
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userGoals = user.goals; // This should be an array of strings
+    if (userGoals?.length) {
+      // Match if any tag in resource matches any goal in user.goals
+      query.tags = { $in: userGoals };
+    }
+
+    // Add optional filters
+    if (pillar) query.pillar = pillar;
+    if (category) query.category = category;
+    if (type) query.type = type;
+
+    const mindfulResources = await MindfulResource.find(query)
+  
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(mindfulResources);
+  } catch (error) {
+    console.error("Error fetching bundle resources:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
