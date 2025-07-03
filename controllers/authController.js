@@ -52,6 +52,51 @@ export const register = async (req, res) => {
 }
 
 
+export const registerGoogle = async (req, res) => {
+  const { email , profilePic, firstName, lastName, phone } = req.body;
+
+  try {
+
+    
+    const existingUser = await User.findOne({ email, isDeleted: false });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const deletedUser = await User.findOne({ email, isDeleted: true });
+    if (deletedUser) {
+      return res.status(400).json({ message: "User deleted by the admin, use different mail" });
+    }
+
+
+    
+
+    const data ={}
+   
+    if(profilePic){
+      data.profilePic = profilePic
+    }
+    data.email = email;
+    if(firstName && lastName){
+      data.name = firstName + " " + lastName;
+    }
+
+    
+    
+    if(phone){
+      data.phone = phone
+    }
+    
+    data.isGoogle = true;
+
+    const user = await User.create(data);
+    res.status(201).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
