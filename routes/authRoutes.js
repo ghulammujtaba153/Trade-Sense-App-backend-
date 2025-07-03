@@ -1,5 +1,5 @@
 import express from 'express';
-import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, makeAffiliate, register, registerGoogle, setupProfile, updateCategories, updatePassword, updateStatus, updateUser } from '../controllers/authController.js';
+import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, makeAffiliate, register, registerGoogle, setupProfile, updateCategories, updatePassword, updateProfile, updateStatus, updateUser } from '../controllers/authController.js';
 import passport from 'passport';
 
 
@@ -39,6 +39,9 @@ authRouter.patch("/forget-password/create/new", updatePassword);
 
 
 authRouter.post("/register/google", registerGoogle);
+
+
+authRouter.post("/profile-pic", updateProfile)
 
 
 
