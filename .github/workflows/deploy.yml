@@ -28,11 +28,11 @@ jobs:
           git pull origin main
 
           # Stop and remove the running container if it exists
-          docker rm -f trade-sense-container || true
+          docker rm -f trade-sense-backend || true
 
           # Build and run the updated app
           docker build -t trade-sense-app .
 
-          docker run -d -p 127.0.0.1:5000:5000 --env-file .env --name trade-sense-container trade-sense-app
+          docker run -d -p 127.0.0.1:5000:5000 --env-file .env --name trade-sense-backend trade-sense-app
 
         EOF
