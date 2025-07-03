@@ -144,32 +144,38 @@ export const bundleResources = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const query = { isDeleted: false };
-
-    // Get user goals
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const userGoals = user.goals; // This should be an array of strings
-    if (userGoals?.length) {
-      // Match if any tag in resource matches any goal in user.goals
-      query.tags = { $in: userGoals };
+    const userGoals = user.goals || [];
+
+    const result = [];
+
+    for (const goal of userGoals) {
+      const query = { isDeleted: false, tags: goal };
+
+      // Add optional filters
+      if (pillar) query.pillar = pillar;
+      if (category) query.category = category;
+      if (type) query.type = type;
+
+      // Fetch resources for this goal
+      const resources = await MindfulResource.find(query)
+        .sort({ createdAt: -1 })
+        .limit(2); // You can adjust the limit if needed
+
+      result.push({
+        goal,
+        resources,
+      });
     }
 
-    // Add optional filters
-    if (pillar) query.pillar = pillar;
-    if (category) query.category = category;
-    if (type) query.type = type;
-
-    const mindfulResources = await MindfulResource.find(query)
-  
-      .sort({ createdAt: -1 });
-
-    res.status(200).json(mindfulResources);
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching bundle resources:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
