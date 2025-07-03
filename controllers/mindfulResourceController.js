@@ -179,3 +179,25 @@ export const bundleResources = async (req, res) => {
   }
 };
 
+
+
+export const RandomOneAudioOneVideoResource = async (req, res) => {
+  try {
+    
+    const audioResources = await MindfulResource.find({ type: "audio", isDeleted: false });
+    const randomAudio = audioResources[Math.floor(Math.random() * audioResources.length)];
+
+    
+    const videoResources = await MindfulResource.find({ type: "video", isDeleted: false });
+    const randomVideo = videoResources[Math.floor(Math.random() * videoResources.length)];
+
+    res.status(200).json({
+      audio: randomAudio || null,
+      video: randomVideo || null,
+    });
+  } catch (error) {
+    console.error("Error fetching random resources:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
