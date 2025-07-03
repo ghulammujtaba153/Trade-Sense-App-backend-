@@ -90,7 +90,12 @@ export const registerGoogle = async (req, res) => {
     data.isGoogle = true;
 
     const user = await User.create(data);
-    res.status(201).json({ user });
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+    });
+
+    res.status(201).json({ user , token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
