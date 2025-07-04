@@ -145,7 +145,7 @@ export const login = async (req, res) => {
 
 export const setupProfile = async (req, res) => {
   const { id } = req.params;
-  const { gender, ageRange, goals, onboarding } = req.body;
+  const { questionnaireAnswers} = req.body;
 
   console.log(req.body)
 
@@ -158,10 +158,8 @@ export const setupProfile = async (req, res) => {
     if (user.isDeleted) {
       return res.status(404).json({ message: "User is deleted" });
     }
-    user.gender = gender;
-    user.ageRange = ageRange;
-    user.goals = goals;
-    user.onboarding = onboarding;
+    
+    user.questionnaireAnswers = questionnaireAnswers;
     await user.save();
 
     res.status(200).json({ user });
