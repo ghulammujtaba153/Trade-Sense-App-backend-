@@ -15,8 +15,8 @@ const habbitSchema = new mongoose.Schema({
         required: true,
     },
     targetDate: {
-        type: Object,
-        required: true,
+        type: Date,
+        
     },
     status: {
         type: String,
