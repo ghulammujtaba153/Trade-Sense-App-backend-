@@ -7,6 +7,10 @@ const paymentSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    accountNumber: {
+        type: Number,
+        required: true
+    },
     type: {
         type: String,
         enum: ["subscription", "affiliate", "other"],
