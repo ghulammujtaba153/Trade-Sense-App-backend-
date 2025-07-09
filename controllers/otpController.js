@@ -23,12 +23,10 @@ export const sendOtp = async (req, res) => {
   }
 
   try {
-    const otpCode = otpGenerator.generate(4, {
-      upperCaseAlphabets: false,
-      specialChars: false,
-      alphabets: false,
-      digits: true,
-    });
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();;
+
+
+    console.log("otp", otpCode);
 
     await Otp.findOneAndUpdate(
       { email },

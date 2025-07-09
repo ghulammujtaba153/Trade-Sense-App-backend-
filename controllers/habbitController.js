@@ -1,5 +1,6 @@
 import Habbit from "../models/habbitSchema.js";
 import mongoose from "mongoose";
+import HabitLog from "../models/habitLogSchema.js";
 // import moment from "moment";
 
 export const createHabbit = async (req, res) => {
@@ -143,6 +144,7 @@ export const getHabbitsByUser = async (req, res) => {
       }
     ]);
 
+
     res.status(200).json(habbits);
   } catch (error) {
     console.error("Error getting habbits:", error);
@@ -179,3 +181,68 @@ export const updateHabbit = async (req, res) => {
         res.status(500).json({ error: 'Error updating habbit' });
     }
 }
+
+
+
+
+
+
+export const habitStats = async (req, res) => {
+    try {
+        const userId = req.user?._id || req.params.userId; // adjust according to your auth
+        // if (!mongoose.Types.ObjectId.isValid(userId)) {
+        //     return res.status(400).json({ error: 'Invalid user ID format' });
+        // }
+
+        // Get total, completed, pending from Habit
+        const habitStats = await Habbit.aggregate([
+            { $match: { isDeleted: false, userId: new mongoose.Types.ObjectId(userId) } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    completed: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+                    pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+                },
+            },
+        ]);
+
+        // Calculate streak from HabitLog
+        const habitLogs = await HabitLog.find({
+            userId: new mongoose.Types.ObjectId(userId),
+            status: 'completed',
+        }).sort({ date: -1 });
+
+        let streak = 0;
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (const log of habitLogs) {
+            const logDate = new Date(log.date);
+            logDate.setHours(0, 0, 0, 0);
+
+            if (streak === 0 && logDate.getTime() < today.getTime()) {
+                // If the most recent log isn't today, break (no current streak)
+                break;
+            }
+
+            const expectedDate = new Date(today);
+            expectedDate.setDate(today.getDate() - streak);
+
+            if (logDate.getTime() === expectedDate.getTime()) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        res.status(200).json({
+            total: habitStats[0]?.total || 0,
+            completed: habitStats[0]?.completed || 0,
+            pending: habitStats[0]?.pending || 0,
+            streak,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
