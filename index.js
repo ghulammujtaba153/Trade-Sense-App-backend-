@@ -36,6 +36,7 @@ import problemReportRouter from './routes/problemReportRoutes.js';
 import affiliateRequestRouter from './routes/affiliateRequestsRoutes.js';
 import tradingFormRouter from './routes/tradingFormRoutes.js';
 import uploadRouter from './routes/fileUploadRoutes.js';
+import paymentRouter from './routes/paymentRoutes.js';
 
 
 const app = express();
@@ -107,6 +108,7 @@ app.use("/api/problem", problemReportRouter)
 app.use("/api/affiliate/requests", affiliateRequestRouter)
 
 app.use("/api/trading-form", tradingFormRouter);
+app.use("/api/payment", paymentRouter);
 
 
 // Serve uploaded files statically (optional)
