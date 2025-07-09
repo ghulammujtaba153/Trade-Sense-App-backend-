@@ -1,6 +1,7 @@
 import HabitLog from "../models/habitLogSchema.js";
 
 
+
 export const createHabitLog = async (req, res) => {
   try {
     const {userId, habitId, status } = req.body;
@@ -14,5 +15,19 @@ export const createHabitLog = async (req, res) => {
     res.status(201).json(habitLog);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+}
+
+
+export const getHabbitLogs = async (req, res) =>{
+
+  const {id} = req.params;
+
+  try {
+    const habbitsLog = await HabitLog.find({userId: id});
+    res.status(200).json(habbitsLog);
+
+  } catch (error) {
+    res.status(500).json({error: error.message});
   }
 }

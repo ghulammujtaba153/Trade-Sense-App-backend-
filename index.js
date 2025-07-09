@@ -34,6 +34,8 @@ import sessionRouter from './routes/sessionRoutes.js';
 import botRouter from './routes/botRoutes.js';
 import problemReportRouter from './routes/problemReportRoutes.js';
 import affiliateRequestRouter from './routes/affiliateRequestsRoutes.js';
+import tradingFormRouter from './routes/tradingFormRoutes.js';
+import uploadRouter from './routes/fileUploadRoutes.js';
 
 
 const app = express();
@@ -103,6 +105,15 @@ app.use("/api/session", sessionRouter)
 app.use("/api/bot", botRouter)
 app.use("/api/problem", problemReportRouter)
 app.use("/api/affiliate/requests", affiliateRequestRouter)
+
+app.use("/api/trading-form", tradingFormRouter);
+
+
+// Serve uploaded files statically (optional)
+app.use('/uploads', express.static('uploads'));
+
+// API Routes
+app.use('/api/file', uploadRouter);
 
 
 
