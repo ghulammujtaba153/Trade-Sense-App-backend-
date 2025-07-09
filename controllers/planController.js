@@ -45,7 +45,17 @@ export const createPlan = async (req, res) => {
 
 
 export const getPlans = async (req, res) => {
+
+    const {category} = req.query;
+
     try {
+
+        if (category) {
+            const plans = await Plan.find({ category: category });
+            res.status(200).json(plans);
+            return;
+        }
+        
         const plans = await Plan.find();
         res.status(200).json(plans);
     } catch (error) {
@@ -126,6 +136,21 @@ export const deletePlan = async (req, res) => {
 export const getMembershipPlan = async (req, res) => {
     try {
         const plan = await Plan.find({ category: 'membership' });
+        
+        res.status(200).json(plan);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+
+export const getAppPlans = async (req, res) => {
+
+    const {category} = req.query;
+
+    try {
+        const plan = await Plan.find({ category: category });
         
         res.status(200).json(plan);
     } catch (error) {

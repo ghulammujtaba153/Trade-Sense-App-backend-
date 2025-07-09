@@ -1,9 +1,24 @@
 import Affiliate from "../models/affiliateSchema.js";
 import mongoose from "mongoose"
+import User from "../models/userSchema.js";
 
 export const createAffiliate = async (req, res) => {
+
+  const {referrerUserId, courseId, type} = req.body
+
     try {
-        const affiliate = await Affiliate.create(req.body);
+
+        const user = await User.findOne({affiliateCode: req.body.referrerUserId});
+
+
+        const data ={}
+
+
+        data.referrerUserId = user._id;
+        data.courseId = courseId;
+        data.type = type
+
+        const affiliate = await Affiliate.create(data);
         res.status(200).json(affiliate);
     } catch (error) {
         req.status(500).json({ error: error.message });
@@ -32,11 +47,14 @@ export const getAffiliates = async (req, res) => {
     const stats = {
       visited: 0,
       enrolled: 0,
+      money: 0
     };
 
     affiliates.forEach((entry) => {
       stats[entry._id] = entry.count;
     });
+
+    stats.money = stats.visited * .5 + stats.enrolled * 5;
 
     res.status(200).json(stats);
   } catch (error) {
