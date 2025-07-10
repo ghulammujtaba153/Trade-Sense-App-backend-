@@ -225,15 +225,22 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
 export const getDailyThought = async (req, res) => {
   try {
     const resources = await MindfulResource.find({ type: "audio", isDeleted: false });
-    
 
-    // random resource having tag "daily thought"
-    const randomResource = resources.filter((resource) => resource.tags.includes("daily thought"))[Math.floor(Math.random() * resources.length)];
+    // Filter resources that have the tag "daily thought"
+    const dailyThoughtResources = resources.filter((resource) =>
+      resource.tags.includes("daily thought")
+    );
 
-   
+    if (dailyThoughtResources.length === 0) {
+      return res.status(404).json({ message: "No daily thought resources found." });
+    }
+
+    // Pick a random resource from the filtered list
+    const randomResource =
+      dailyThoughtResources[Math.floor(Math.random() * dailyThoughtResources.length)];
 
     res.status(200).json(randomResource);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
