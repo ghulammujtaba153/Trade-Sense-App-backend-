@@ -61,3 +61,18 @@ export const getAffiliates = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
+export const getAffiliatesRecords = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const affiliate = await Affiliate.find({ referrerUserId: id });
+
+    res.status(200).json(affiliate);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

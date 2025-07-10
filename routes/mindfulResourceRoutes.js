@@ -1,5 +1,5 @@
 import express from 'express';
-import { createMindfulResource, getMindfulResource, updateResource, deleteResource, recommendMindfulResource, bundleResources, RandomOneAudioOneVideoResource } from '../controllers/mindfulResourceController.js';
+import { createMindfulResource, getMindfulResource, updateResource, deleteResource, recommendMindfulResource, bundleResources, RandomOneAudioOneVideoResource, getDailyThought } from '../controllers/mindfulResourceController.js';
 
 const resourceRouter = express.Router();
 
@@ -18,7 +18,7 @@ resourceRouter.get("/bundle/:id", bundleResources)
 
 resourceRouter.get("/random/:id", RandomOneAudioOneVideoResource)
 
-
+resourceRouter.get("/dailyThought", getDailyThought)
 
 
 export default resourceRouter;

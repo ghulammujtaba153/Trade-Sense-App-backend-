@@ -5,7 +5,7 @@ import HabitLog from "../models/habitLogSchema.js";
 import { startOfWeek, endOfWeek } from 'date-fns';
 
 export const createMindfulResource = async (req, res) => {
-    const { title, description, thumbnail, type, url, category, pillar, isPremium, tags} = req.body;
+    const { title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
 
     
     try {
@@ -18,7 +18,9 @@ export const createMindfulResource = async (req, res) => {
             category,
             url,
             tags,
+            duration,
             isPremium,
+            
         });
         await mindfulResource.save();
         res.status(201).json(mindfulResource);
@@ -103,8 +105,9 @@ export const deleteResource = async (req, res) => {
           category,
           url,
           tags,
-          isPremium,
           duration,
+          isPremium,
+          
         },
         { new: true }
       );
@@ -218,3 +221,19 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
   }
 };
 
+
+export const getDailyThought = async (req, res) => {
+  try {
+    const resources = await MindfulResource.find({ type: "audio", isDeleted: false });
+    
+
+    // random resource having tag "daily thought"
+    const randomResource = resources.filter((resource) => resource.tags.includes("daily thought"))[Math.floor(Math.random() * resources.length)];
+
+   
+
+    res.status(200).json(randomResource);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}

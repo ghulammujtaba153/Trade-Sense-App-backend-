@@ -9,7 +9,7 @@ affiliateRequestRouter.post('/', createAffiliateRequest)
 
 affiliateRequestRouter.get('/:id',   getAffiliateRequest)
 
-affiliateRequestRouter.get('/get', getAffiliateRequests)
+affiliateRequestRouter.get('/records/all', getAffiliateRequests)
 
 affiliateRequestRouter.patch('/update/:id', updateStatus)
 
