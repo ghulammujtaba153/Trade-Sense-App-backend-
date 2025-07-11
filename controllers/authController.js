@@ -115,6 +115,8 @@ export const login = async (req, res) => {
     }
 
 
+    console.log("user", user)
+
     if(user.status !== "active"){
       return res.status(401).json({ message: "User is suspended by the admin" });
     }
@@ -128,20 +130,19 @@ export const login = async (req, res) => {
       expiresIn: process.env.JWT_EXPIRES_IN || '1h',
     });
 
-    // Don't send password back
-    const userWithoutPassword = user.toObject();
-    delete userWithoutPassword.password;
-    userWithoutPassword.password=password
+    
 
 
     res.status(200).json({ 
       token,
-      user: userWithoutPassword
+      user
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 }
+
+
 
 export const setupProfile = async (req, res) => {
   const { id } = req.params;
@@ -151,6 +152,7 @@ export const setupProfile = async (req, res) => {
 
   try {
     const user = await User.findById(id);
+    
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
