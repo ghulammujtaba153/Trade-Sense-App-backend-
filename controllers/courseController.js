@@ -134,8 +134,15 @@ export const getCourse = async (req, res) => {
       {
         $lookup: {
           from: "coursemodules",
-          let: { courseId: "$_id" },
+          let: { courseID: "$_id" },
           pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$courseID", "$$courseID"]
+                }
+              }
+            },
             {
               $lookup: {
                 from: "favourites",
@@ -172,7 +179,8 @@ export const getCourse = async (req, res) => {
           ],
           as: "courseModules",
         },
-      },
+      }
+      
     ]);
 
     if (!courses || courses.length === 0) {

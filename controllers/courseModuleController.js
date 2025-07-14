@@ -24,6 +24,8 @@ export const getCourseModules = async (req, res) => {
   const { id } = req.params;
 
   try {
+
+    console.log("course modules", id)
     const courseModules = await CourseModule.aggregate([
       {
         $match: { courseID: new mongoose.Types.ObjectId(id) },
