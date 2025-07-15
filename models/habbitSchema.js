@@ -16,12 +16,11 @@ const habbitSchema = new mongoose.Schema({
     },
     targetDate: {
         type: Date,
-        
     },
     status: {
         type: String,
-        enum: [ "pending", "completed", "failed"],
-        default: "pending",
+        enum: [ "active", "pending", "completed"],
+        default: "active",
     },
     createdAt: {
         type: Date,

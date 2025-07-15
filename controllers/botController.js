@@ -2,7 +2,6 @@ import axios from "axios";
 import Bot from "../models/botSchema.js";
 
 
-
 export const create = async (req, res) => {
   const { userId, session_id, message } = req.body;
 
@@ -14,19 +13,33 @@ export const create = async (req, res) => {
     // Send message to chat API
     const apiRes = await axios.post("http://13.48.23.117:8000/chat", { session_id, message });
 
-    const botResponse = apiRes.data.response; 
+    const botResponse = apiRes.data.response;
 
-    
-    const bot = new Bot({ userId, sessionId: session_id, message, response: botResponse });
+    // Tokenize the response (simple whitespace split)
+    const tokens = botResponse.split(/\s+/);
+
+    // Save conversation
+    const bot = new Bot({
+      userId,
+      sessionId: session_id,
+      message,
+      response: botResponse,
+    });
     await bot.save();
-    console.log("chat save", bot);
-    
-    res.status(200).json({ response: botResponse });
+
+    console.log("Chat saved:", bot);
+
+    // Respond with both raw and tokenized response
+    res.status(200).json({
+      response: botResponse,
+      tokens,
+    });
   } catch (error) {
     console.error("Chat error:", error.message);
     res.status(500).json({ error: "Something went wrong while processing the chat" });
   }
 };
+
 
 
 

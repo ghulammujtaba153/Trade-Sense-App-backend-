@@ -21,25 +21,29 @@ export const createHabbit = async (req, res) => {
 
 
 
+
+
+
 export const getHabbitsByUser = async (req, res) => {
   const { id } = req.params;
-  
+
+  const now = new Date();
 
   try {
     const habbits = await Habbit.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(id),
-          isDeleted: false
-        }
+          isDeleted: false,
+        },
       },
       {
         $lookup: {
           from: "habitlogs",
           localField: "_id",
           foreignField: "habitId",
-          as: "habitLogs"
-        }
+          as: "habitLogs",
+        },
       },
       {
         $addFields: {
@@ -48,9 +52,9 @@ export const getHabbitsByUser = async (req, res) => {
               $filter: {
                 input: "$habitLogs",
                 as: "log",
-                cond: { $eq: ["$$log.status", "completed"] }
-              }
-            }
+                cond: { $eq: ["$$log.status", "completed"] },
+              },
+            },
           },
           expectedCount: {
             $switch: {
@@ -58,65 +62,53 @@ export const getHabbitsByUser = async (req, res) => {
                 {
                   case: { $eq: ["$type", "daily"] },
                   then: {
-                    $round: [
+                    $add: [
                       {
-                        $add: [
-                          {
-                            $divide: [
-                              { $subtract: [new Date(), "$createdAt"] },
-                              1000 * 60 * 60 * 24 // milliseconds in a day
-                            ]
-                          },
-                          1
-                        ]
+                        $dateDiff: {
+                          startDate: "$createdAt",
+                          endDate: "$targetDate",
+                          unit: "day",
+                        },
                       },
-                      0
-                    ]
-                  }
+                      1,
+                    ],
+                  },
                 },
                 {
                   case: { $eq: ["$type", "weekly"] },
                   then: {
-                    $round: [
+                    $add: [
                       {
-                        $add: [
-                          {
-                            $divide: [
-                              { $subtract: [new Date(), "$createdAt"] },
-                              1000 * 60 * 60 * 24 * 7 // milliseconds in a week
-                            ]
-                          },
-                          1
-                        ]
+                        $dateDiff: {
+                          startDate: "$createdAt",
+                          endDate: "$targetDate",
+                          unit: "week",
+                        },
                       },
-                      0
-                    ]
-                  }
+                      1,
+                    ],
+                  },
                 },
                 {
                   case: { $eq: ["$type", "monthly"] },
                   then: {
-                    $round: [
+                    $add: [
                       {
-                        $add: [
-                          {
-                            $divide: [
-                              { $subtract: [new Date(), "$createdAt"] },
-                              1000 * 60 * 60 * 24 * 30 // milliseconds in a month
-                            ]
-                          },
-                          1
-                        ]
+                        $dateDiff: {
+                          startDate: "$createdAt",
+                          endDate: "$targetDate",
+                          unit: "month",
+                        },
                       },
-                      0
-                    ]
-                  }
-                }
+                      1,
+                    ],
+                  },
+                },
               ],
-              default: 1
-            }
-          }
-        }
+              default: 1,
+            },
+          },
+        },
       },
       {
         $addFields: {
@@ -129,21 +121,122 @@ export const getHabbitsByUser = async (req, res) => {
                   {
                     $multiply: [
                       { $divide: ["$completedCount", "$expectedCount"] },
-                      100
-                    ]
+                      100,
+                    ],
                   },
-                  0
-                ]
-              }
-            ]
-          }
-        }
+                  0,
+                ],
+              },
+            ],
+          },
+        },
       },
       {
-        $sort: { createdAt: -1 }
-      }
+        $addFields: {
+          isChecked: {
+            $switch: {
+              branches: [
+                {
+                  case: { $eq: ["$type", "daily"] },
+                  then: {
+                    $gt: [
+                      {
+                        $size: {
+                          $filter: {
+                            input: "$habitLogs",
+                            as: "log",
+                            cond: {
+                              $and: [
+                                { $eq: ["$$log.status", "completed"] },
+                                {
+                                  $eq: [
+                                    { $dateToString: { format: "%Y-%m-%d", date: "$$log.date" } },
+                                    new Date().toISOString().slice(0, 10),
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+                {
+                  case: { $eq: ["$type", "weekly"] },
+                  then: {
+                    $gt: [
+                      {
+                        $size: {
+                          $filter: {
+                            input: "$habitLogs",
+                            as: "log",
+                            cond: {
+                              $and: [
+                                { $eq: ["$$log.status", "completed"] },
+                                {
+                                  $eq: [
+                                    { $isoWeek: "$$log.date" },
+                                    { $isoWeek: now },
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+                {
+                  case: { $eq: ["$type", "monthly"] },
+                  then: {
+                    $gt: [
+                      {
+                        $size: {
+                          $filter: {
+                            input: "$habitLogs",
+                            as: "log",
+                            cond: {
+                              $and: [
+                                { $eq: ["$$log.status", "completed"] },
+                                {
+                                  $and: [
+                                    {
+                                      $eq: [
+                                        { $year: "$$log.date" },
+                                        { $year: now },
+                                      ],
+                                    },
+                                    {
+                                      $eq: [
+                                        { $month: "$$log.date" },
+                                        { $month: now },
+                                      ],
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+              ],
+              default: false,
+            },
+          },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
     ]);
-
 
     res.status(200).json(habbits);
   } catch (error) {
@@ -151,6 +244,10 @@ export const getHabbitsByUser = async (req, res) => {
     res.status(500).json({ error: "Error getting habbits" });
   }
 };
+
+
+
+
 
 
 

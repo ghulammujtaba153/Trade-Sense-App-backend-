@@ -37,6 +37,7 @@ import affiliateRequestRouter from './routes/affiliateRequestsRoutes.js';
 import tradingFormRouter from './routes/tradingFormRoutes.js';
 import uploadRouter from './routes/fileUploadRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
+import moodRouter from './routes/moodRoutes.js';
 
 
 const app = express();
@@ -109,7 +110,7 @@ app.use("/api/affiliate/requests", affiliateRequestRouter)
 
 app.use("/api/trading-form", tradingFormRouter);
 app.use("/api/payment", paymentRouter);
-
+app.use("/api/mood", moodRouter);
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));

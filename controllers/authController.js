@@ -9,7 +9,7 @@ dotenv.config();
 
 
 export const register = async (req, res) => {
-  const { name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
+  const { profilePic, description, links, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
 
   try {
 
@@ -35,6 +35,16 @@ export const register = async (req, res) => {
 
     if (role) {
       data.role = role;
+    }
+
+    if(profilePic) {
+      data.profilePic = profilePic;
+    }
+    if(description) {
+      data.description = description;
+    }
+    if(links) {
+      data.links = links;
     }
 
     if (gender, ageRange, goals, choosenArea, questionnaireAnswers) {

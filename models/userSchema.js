@@ -71,6 +71,8 @@ const userSchema = new mongoose.Schema({
     googleId: {
       type: String
     },
+    description: {type: String},
+    links: { },
     status: {
       type: String,
       enum: ["active", "suspended"],
