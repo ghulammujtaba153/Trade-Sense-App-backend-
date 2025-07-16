@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import crypto from 'crypto';
+import AffiliateRequests from "../models/affiliateRequestsSchema.js";
 
 dotenv.config();
 
@@ -449,6 +450,17 @@ export const makeAffiliate = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+
+    const affiliateReq = await AffiliateRequests.findOne({ userId: id });
+
+if (!affiliateReq) {
+  return res.status(404).json({ error: "Affiliate request not found" });
+}
+
+affiliateReq.status = "accepted";
+await affiliateReq.save(); // ✅ Await the save
+
 
     user.isAffiliate = true;
     const affiliateCode = await generateUniqueAffiliateCode();
