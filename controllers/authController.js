@@ -211,7 +211,7 @@ export const deleteUser = async (req, res) => {
 }
 
 export const updateUser = async (req, res) => {
-  const { profilePic, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
+  const { profilePic, description, links, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
 
   try {
 
@@ -246,6 +246,13 @@ export const updateUser = async (req, res) => {
 
     if(choosenArea){
       data.choosenArea = choosenArea;
+    }
+    if(description){
+      data.description = description;
+    }
+
+    if(links){
+      data.links = links;
     }
 
     if(questionnaireAnswers){
