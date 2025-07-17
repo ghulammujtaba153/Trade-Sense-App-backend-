@@ -7,6 +7,7 @@ export const createAffiliate = async (req, res) => {
   const {referrerUserId, courseId, type} = req.body
 
     try {
+      console.log(req.body)
 
         const user = await User.findOne({affiliateCode: req.body.referrerUserId});
 
@@ -21,7 +22,8 @@ export const createAffiliate = async (req, res) => {
         const affiliate = await Affiliate.create(data);
         res.status(200).json(affiliate);
     } catch (error) {
-        req.status(500).json({ error: error.message });
+      console.log(error)
+      req.status(500).json({ error: error.message });
     }
 }
 

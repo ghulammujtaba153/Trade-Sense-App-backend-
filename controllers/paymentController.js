@@ -20,7 +20,7 @@ export const createPayment = async (req, res) => {
 
 export const getPayments = async (req, res) => {
     try {
-        const payments = await Payment.find();
+        const payments = await Payment.find({userId: req.params.id});
         res.status(200).json({
             success: true,
             payments,

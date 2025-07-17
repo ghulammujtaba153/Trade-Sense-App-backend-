@@ -4,7 +4,7 @@ import { createAffiliate, getAffiliates, getAffiliatesRecords } from "../control
 
 const affiliateRouter = express.Router()
 
-affiliateRouter.post("/", createAffiliate);
+affiliateRouter.post("/data", createAffiliate);
 affiliateRouter.get("/:id", getAffiliates);
 affiliateRouter.get("/records/:id", getAffiliatesRecords)
 
