@@ -9,7 +9,7 @@ const tradingFormSchema = mongoose.Schema({
         required: true
     },
     stockName:{
-        type: string
+        type: String
     },
     tradeDate: {
         type: Date,
