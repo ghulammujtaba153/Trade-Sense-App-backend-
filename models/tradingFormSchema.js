@@ -8,6 +8,9 @@ const tradingFormSchema = mongoose.Schema({
         ref: "User",
         required: true
     },
+    stockName:{
+        type: string
+    },
     tradeDate: {
         type: Date,
         default: Date.now
