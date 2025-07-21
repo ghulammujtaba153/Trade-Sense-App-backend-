@@ -3,6 +3,7 @@ import MindfulResource from "../models/mindfulResourceSchema.js";
 import User from "../models/userSchema.js";
 import HabitLog from "../models/habitLogSchema.js";
 import { startOfWeek, endOfWeek } from 'date-fns';
+import OnBoardingQuestionnaire from './../models/onBoardingQuestionnaireSchema.js';
 
 export const createMindfulResource = async (req, res) => {
     const { title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
@@ -150,39 +151,49 @@ export const bundleResources = async (req, res) => {
 
   try {
     const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const onboardingGoals = await OnBoardingQuestionnaire.findById("685d30845412243e81b295a2");
+    if (!onboardingGoals) return res.status(404).json({ error: "Onboarding goals not found" });
+
+    const selectedGoalIds = user.questionnaireAnswers.get("685d30845412243e81b295a2") || [];
+    console.log("selectedGoalIds", selectedGoalIds);
+
+    let selectedGoals = onboardingGoals.questions
+      .filter((q) => selectedGoalIds.includes(q._id.toString()))
+      .map((q) => q.text);
+
+    // Fallback to all goals if no match
+    if (!selectedGoals.length) {
+      selectedGoals = onboardingGoals.questions.map(q => q.text);
     }
 
-    const userGoals = user.goals || [];
+    console.log("selectedGoals", selectedGoals);
 
-    const result = [];
+    const result = await Promise.all(
+      selectedGoals.map(async (goalText) => {
+        const query = { isDeleted: false, tags: goalText };
+        if (pillar) query.pillar = pillar;
+        if (category) query.category = category;
+        if (type) query.type = type;
 
-    for (const goal of userGoals) {
-      const query = { isDeleted: false, tags: goal };
+        const resources = await MindfulResource.find(query)
+          .sort({ createdAt: -1 })
+          .limit(2);
 
-      // Add optional filters
-      if (pillar) query.pillar = pillar;
-      if (category) query.category = category;
-      if (type) query.type = type;
+        return { goal: goalText, resources };
+      })
+    );
 
-      // Fetch resources for this goal
-      const resources = await MindfulResource.find(query)
-        .sort({ createdAt: -1 })
-        .limit(2); // You can adjust the limit if needed
-
-      result.push({
-        goal,
-        resources,
-      });
-    }
-
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching bundle resources:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
 
 
 
