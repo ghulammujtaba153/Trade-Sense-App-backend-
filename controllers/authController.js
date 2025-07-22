@@ -142,8 +142,12 @@ export const login = async (req, res) => {
     });
 
 
-    user.fcmToken = fcmToken;
-    await user.save();
+    if(fcmToken){
+      user.fcmToken = fcmToken;
+      await user.save();
+    }
+
+    
 
     
 
