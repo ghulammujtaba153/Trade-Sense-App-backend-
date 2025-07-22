@@ -71,6 +71,7 @@ const userSchema = new mongoose.Schema({
     googleId: {
       type: String
     },
+    fcmToken: {},
     description: {type: String},
     links: { },
     status: {

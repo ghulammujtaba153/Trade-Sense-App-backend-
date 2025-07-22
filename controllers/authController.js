@@ -117,7 +117,7 @@ export const registerGoogle = async (req, res) => {
 
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, fcmToken } = req.body;
 
   try {
     const user = await User.findOne({ email , isDeleted: false});
@@ -140,6 +140,10 @@ export const login = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || '1h',
     });
+
+
+    user.fcmToken = fcmToken;
+    await user.save();
 
     
 
