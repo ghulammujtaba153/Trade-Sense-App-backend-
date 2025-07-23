@@ -36,7 +36,7 @@ export const getPayments = async (req, res) => {
 
 export const getWithdrawalRequests = async (req, res) => {
     try {
-        const withdrawalRequests = await Payment.find({}).populate("userId");
+        const withdrawalRequests = await Payment.find({});
         res.status(200).json({
             success: true,
             withdrawalRequests,

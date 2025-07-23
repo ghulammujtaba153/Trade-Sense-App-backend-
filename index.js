@@ -39,7 +39,6 @@ import uploadRouter from './routes/fileUploadRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
 import moodRouter from './routes/moodRoutes.js';
 import welcomeRouter from './routes/welcomeRoutes.js';
-import musicRouter from './routes/musicRoutes.js';
 
 
 const app = express();
@@ -114,7 +113,6 @@ app.use("/api/trading-form", tradingFormRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/mood", moodRouter);
 app.use("/api/welcome", welcomeRouter)
-app.use("/api/music", musicRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));
