@@ -16,23 +16,25 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-function sendNotificationToUser() {
-  const message = {
+export default function sendNotificationToUser(title, message, token) {
+  const notificationMessage = {
     notification: {
-      title: "test title mujtaba",
-      body: "test message",
+      title: title,
+      body: message,
     },
-    token: "eP9TydgUT_6KwPwOedZwG4:APA91bEohSTADBiEEm5Aaemue2ZI32i8rlCPThQXgt96SggzIekJJ4ATY5ScYt5qrNMkMfQ4HyKvme6DcK1azoJgVNIwW6RIx1iVBoP85Fe7lwWh-8KP8Qo",
+    token: token,
   };
 
-  admin.messaging().send(message)
+  return admin.messaging().send(notificationMessage)
     .then(response => {
       console.log("Successfully sent message:", response);
+      return { success: true, response };
     })
     .catch(error => {
       console.log("Error sending message:", error);
+      return { success: false, error };
     });
 }
 
 // Call the function
-sendNotificationToUser();
+// sendNotificationToUser("test title", "test message", "eP9TydgUT_6KwPwOedZwG4:APA91bEohSTADBiEEm5Aaemue2ZI32i8rlCPThQXgt96SggzIekJJ4ATY5ScYt5qrNMkMfQ4HyKvme6DcK1azoJgVNIwW6RIx1iVBoP85Fe7lwWh-8KP8Qo");

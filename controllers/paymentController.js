@@ -34,6 +34,21 @@ export const getPayments = async (req, res) => {
 }
 
 
+export const getWithdrawalRequests = async (req, res) => {
+    try {
+        const withdrawalRequests = await Payment.find({});
+        res.status(200).json({
+            success: true,
+            withdrawalRequests,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
 export const updateStatus = async (req, res) => {
     try {
         const payment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true });

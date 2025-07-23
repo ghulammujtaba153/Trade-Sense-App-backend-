@@ -2,6 +2,7 @@ import DeliveredNotification from "../models/deliveredNotificationSchema.js";
 import Notification from "../models/notificationSchema.js";
 import User from "../models/userSchema.js";
 import { sendPushNotification } from "../utils/sendPushNotification.js";
+import sendNotificationToUser from "../test.js";
 
 
 export const createNotification = async (req, res) => {
@@ -28,6 +29,45 @@ export const createNotification = async (req, res) => {
       status: scheduleTime ? "scheduled" : "sent",
     };
 
+    // Handle 'all' target type - send to all active users
+    if (targetType === 'all') {
+      // Fetch all active users
+      const users = await User.find({
+        isDeleted: false,
+        status: 'active',
+      }).select('_id fcmToken');
+
+      console.log("all users", users);
+
+      // Store user IDs in recipients (for database)
+      notificationData.recipients = users.map(user => user._id);
+
+      // Get FCM tokens for push notifications
+      const fcmTokens = users
+        .filter(user => user.fcmToken && user.fcmToken.trim() !== '')
+        .map(user => user.fcmToken);
+
+      console.log("all fcmTokens", fcmTokens);
+
+      // Send push notifications
+      if (!scheduleTime && fcmTokens.length > 0) {
+        for (const token of fcmTokens) {
+          if (token && token.trim() !== '') {
+            try {
+              const result = await sendNotificationToUser(notificationData.title, notificationData.message, token);
+              if (!result.success && result.error?.errorInfo?.code === 'messaging/registration-token-not-registered') {
+                console.log("Invalid FCM token detected:", token);
+                // Optionally, you could remove the invalid token from the user's record here
+                // await User.updateMany({ fcmToken: token }, { $unset: { fcmToken: 1 } });
+              }
+            } catch (error) {
+              console.log("Error sending notification to token:", token, error.message);
+            }
+          }
+        }
+      }
+    }
+
     
     if (targetType === 'roles' && Array.isArray(targetRoles)) {
       notificationData.targetRoles = targetRoles;
@@ -37,16 +77,77 @@ export const createNotification = async (req, res) => {
         role: { $in: targetRoles },
         isDeleted: false,
         status: 'active',
-      }).select('_id');
+      }).select('_id fcmToken');
 
       console.log("users", users);
 
+      // Store user IDs in recipients (for database)
       notificationData.recipients = users.map(user => user._id);
+
+      // Get FCM tokens for push notifications
+      const fcmTokens = users
+        .filter(user => user.fcmToken && user.fcmToken.trim() !== '')
+        .map(user => user.fcmToken);
+
+      console.log("fcmTokens", fcmTokens);
+
+      // Send push notifications
+      if (!scheduleTime && fcmTokens.length > 0) {
+        for (const token of fcmTokens) {
+          if (token && token.trim() !== '') {
+            try {
+              const result = await sendNotificationToUser(notificationData.title, notificationData.message, token);
+              if (!result.success && result.error?.errorInfo?.code === 'messaging/registration-token-not-registered') {
+                console.log("Invalid FCM token detected:", token);
+                // Optionally, you could remove the invalid token from the user's record here
+                // await User.updateMany({ fcmToken: token }, { $unset: { fcmToken: 1 } });
+              }
+            } catch (error) {
+              console.log("Error sending notification to token:", token, error.message);
+            }
+          }
+        }
+      }
     } 
 
 
     if(targetType === 'specific') {
-      notificationData.recipients = recipients;
+      // Fetch users by their IDs to get FCM tokens
+      const users = await User.find({
+        _id: { $in: recipients },
+        isDeleted: false,
+        status: 'active',
+      }).select('_id fcmToken');
+
+      console.log("specific users", users);
+
+      // Store user IDs in recipients (for database)
+      notificationData.recipients = users.map(user => user._id);
+
+      // Get FCM tokens for push notifications
+      const fcmTokens = users
+        .filter(user => user.fcmToken && user.fcmToken.trim() !== '')
+        .map(user => user.fcmToken);
+
+      console.log("fcmTokens", fcmTokens);
+
+      // Send push notifications
+      if (!scheduleTime && fcmTokens.length > 0) {
+        for (const token of fcmTokens) {
+          if (token && token.trim() !== '') {
+            try {
+              const result = await sendNotificationToUser(notificationData.title, notificationData.message, token);
+              if (!result.success && result.error?.errorInfo?.code === 'messaging/registration-token-not-registered') {
+                console.log("Invalid FCM token detected:", token);
+                // Optionally, you could remove the invalid token from the user's record here
+                // await User.updateMany({ fcmToken: token }, { $unset: { fcmToken: 1 } });
+              }
+            } catch (error) {
+              console.log("Error sending notification to token:", token, error.message);
+            }
+          }
+        }
+      }
     }
 
 
@@ -54,14 +155,10 @@ export const createNotification = async (req, res) => {
       notificationData.sendAt = new Date(sendAt);
     }
 
-    // Only send push notification immediately if it's not scheduled
-      if (!scheduleTime && notificationData.recipients.length > 0) {
-        await sendPushNotification({
-          headings: title,
-          contents: message,
-          userIds: notificationData.recipients
-        });
-      }
+
+    console.log("sending push notification");
+    console.log("notificationData.recipients", notificationData.recipients);
+    console.log("notificationData.recipients.length", notificationData.recipients.length);
 
    
     if (scheduleTime) {
@@ -75,7 +172,7 @@ export const createNotification = async (req, res) => {
     
     const newNotification = await Notification.create(notificationData);
 
-    console.log("newNotification", newNotification);
+    // console.log("newNotification", newNotification);
 
     
     if (newNotification.recipients?.length) {
@@ -235,6 +332,8 @@ export const getNotificationHistory = async (req, res) => {
 export const getNotificationsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    console.log("userId", userId);
 
    
     const user = await User.findById(userId);

@@ -1,5 +1,8 @@
 # Node modules
 /node_modules/
 
+
+firebase-account.json
+
 # Environment variables
 .env

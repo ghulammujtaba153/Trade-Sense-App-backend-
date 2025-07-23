@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["subscription", "affiliate", "other"],
+        enum: ["paypal", "bank"],
         required: true,
     },
     amount: {

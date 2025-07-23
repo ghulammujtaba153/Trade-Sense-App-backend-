@@ -9,6 +9,6 @@ notificationRouter.get("/history", getNotificationHistory);
 notificationRouter.patch("/seen/:id", markNotificationAsSeen);
 notificationRouter.put("/:id", updateNotification);
 notificationRouter.delete("/:id", deleteNotification)
-notificationRouter.get("/:id", getNotificationsByUserId);
+notificationRouter.get("/:userId", getNotificationsByUserId);
 
 export default notificationRouter;
