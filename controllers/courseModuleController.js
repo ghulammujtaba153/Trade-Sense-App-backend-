@@ -83,3 +83,15 @@ export const  deleteCourseModule = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+
+export const editCourseModule = async (req, res) => {
+  const { id } = req.params;
+  const { title, description, url, duration } = req.body;
+  try {
+    const courseModule = await CourseModule.findByIdAndUpdate(id, req.body, { new: true });
+    res.status(200).json(courseModule);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
