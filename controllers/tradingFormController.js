@@ -29,7 +29,7 @@ export const getTradingForm = async (req, res) => {
 // Controller to fetch trading data for graph
 export const getTradingGraphData = async (req, res) => {
   try {
-    const userId = req.body.userId; 
+    const userId = req.params.id; 
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
