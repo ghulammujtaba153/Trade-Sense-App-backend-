@@ -40,6 +40,8 @@ import paymentRouter from './routes/paymentRoutes.js';
 import moodRouter from './routes/moodRoutes.js';
 import welcomeRouter from './routes/welcomeRoutes.js';
 import musicRouter from './routes/musicRoutes.js';
+import './cronJobs/scheduler.js';
+
 
 
 const app = express();

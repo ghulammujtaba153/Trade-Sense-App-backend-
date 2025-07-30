@@ -1,7 +1,6 @@
 import DeliveredNotification from "../models/deliveredNotificationSchema.js";
 import Notification from "../models/notificationSchema.js";
 import User from "../models/userSchema.js";
-import { sendPushNotification } from "../utils/sendPushNotification.js";
 import sendNotificationToUser from "../test.js";
 
 

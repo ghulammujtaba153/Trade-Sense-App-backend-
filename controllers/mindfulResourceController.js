@@ -145,6 +145,53 @@ export const deleteResource = async (req, res) => {
 
 
 
+// export const bundleResources = async (req, res) => {
+//   const { pillar, category, type } = req.query;
+//   const { id } = req.params;
+
+//   try {
+//     const user = await User.findById(id);
+//     if (!user) return res.status(404).json({ error: "User not found" });
+
+//     const onboardingGoals = await OnBoardingQuestionnaire.findById("685d30845412243e81b295a2");
+//     if (!onboardingGoals) return res.status(404).json({ error: "Onboarding goals not found" });
+
+//     const selectedGoalIds = user.questionnaireAnswers.get("685d30845412243e81b295a2") || [];
+//     console.log("selectedGoalIds", selectedGoalIds);
+
+//     let selectedGoals = onboardingGoals.questions
+//       .filter((q) => selectedGoalIds.includes(q._id.toString()))
+//       .map((q) => q.text);
+
+//     // Fallback to all goals if no match
+//     if (!selectedGoals.length) {
+//       selectedGoals = onboardingGoals.questions.map(q => q.text);
+//     }
+
+//     console.log("selectedGoals", selectedGoals);
+
+//     const result = await Promise.all(
+//       selectedGoals.map(async (goalText) => {
+//         const query = { isDeleted: false, tags: goalText };
+//         if (pillar) query.pillar = pillar;
+//         if (category) query.category = category;
+//         if (type) query.type = type;
+
+//         const resources = await MindfulResource.find(query)
+//           .sort({ createdAt: -1 })
+//           .limit(2);
+
+//         return { goal: goalText, resources };
+//       })
+//     );
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error("Error fetching bundle resources:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const bundleResources = async (req, res) => {
   const { pillar, category, type } = req.query;
   const { id } = req.params;
@@ -157,18 +204,18 @@ export const bundleResources = async (req, res) => {
     if (!onboardingGoals) return res.status(404).json({ error: "Onboarding goals not found" });
 
     const selectedGoalIds = user.questionnaireAnswers.get("685d30845412243e81b295a2") || [];
-    console.log("selectedGoalIds", selectedGoalIds);
 
     let selectedGoals = onboardingGoals.questions
       .filter((q) => selectedGoalIds.includes(q._id.toString()))
       .map((q) => q.text);
 
-    // Fallback to all goals if no match
+    // Fallback to all goals if none matched
     if (!selectedGoals.length) {
-      selectedGoals = onboardingGoals.questions.map(q => q.text);
+      selectedGoals = onboardingGoals.questions.map((q) => q.text);
     }
 
-    console.log("selectedGoals", selectedGoals);
+    // Limit to max 3 goals
+    selectedGoals = selectedGoals.slice(0, 3);
 
     const result = await Promise.all(
       selectedGoals.map(async (goalText) => {
@@ -177,9 +224,22 @@ export const bundleResources = async (req, res) => {
         if (category) query.category = category;
         if (type) query.type = type;
 
-        const resources = await MindfulResource.find(query)
+        // First, try to find up to 4 matching resources
+        let resources = await MindfulResource.find(query)
           .sort({ createdAt: -1 })
-          .limit(2);
+          .limit(4);
+
+        // If less than 4, fetch random resources to fill the gap
+        if (resources.length < 4) {
+          const remaining = 4 - resources.length;
+
+          const additional = await MindfulResource.aggregate([
+            { $match: { isDeleted: false, _id: { $nin: resources.map(r => r._id) } } },
+            { $sample: { size: remaining } },
+          ]);
+
+          resources = [...resources, ...additional];
+        }
 
         return { goal: goalText, resources };
       })
@@ -191,7 +251,6 @@ export const bundleResources = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 
