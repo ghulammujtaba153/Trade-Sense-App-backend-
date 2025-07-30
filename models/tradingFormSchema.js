@@ -36,7 +36,8 @@ const tradingFormSchema = mongoose.Schema({
     }, 
     quantity: {
         type: Number,
-        required: true
+        required: false,
+        default: 0
     }, 
     stopLoss : {
         type: Number,
