@@ -5,6 +5,15 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import crypto from 'crypto';
 import AffiliateRequests from "../models/affiliateRequestsSchema.js";
+import Mood from "../models/moodSchema.js";
+import TradingForm from "../models/tradingFormSchema.js";
+import Habbit from './../models/habbitSchema.js';
+import Favourite from './../models/favouriteSchema.js';
+import Rating from "../models/ratingSchema.js";
+import Payment from "../models/paymentSchema.js";
+import Affiliate from './../models/affiliateSchema.js';
+import Enrollment from './../models/enrollmentSchema.js';
+import Bot from "../models/botSchema.js";
 
 dotenv.config();
 
@@ -211,6 +220,24 @@ export const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    await Promise.all([
+      Mood.deleteMany({ userId: id }),
+      TradingForm.deleteMany({ userId: id }),
+      Habbit.deleteMany({ id }),
+      Favourite.deleteMany({ userId: id }),
+      Rating.deleteMany({ userId: id }),
+      Payment.deleteMany({ userId: id }),
+      AffiliateRequests.deleteMany({ userId: id }),
+      Enrollment.deleteMany({ student: id }),
+      Bot.deleteMany({ userId: id })
+
+    ]);
+
+    
+    await User.findByIdAndDelete(id);
+
+
     user.isDeleted = true;
     await user.save();
     res.status(200).json({ message: "User deleted successfully" });

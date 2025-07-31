@@ -1,45 +1,48 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import AWS from 'aws-sdk';
+import dotenv from 'dotenv';
 
-// Make sure the uploads folder exists
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+dotenv.config();
 
-// Configure Multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // Save files to /uploads
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = `${Date.now()}-${file.fieldname}${ext}`;
-    cb(null, filename);
-  },
+// AWS config
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region: 'eu-north-1',
 });
 
-// Initialize Multer middleware
-export const upload = multer({ storage });
+// Set up multer-s3
+const upload = multer({
+  storage: multer.memoryStorage(), // or use multerS3 if you prefer direct streaming
+  limits: { fileSize: 10 * 1024 * 1024 }, // Optional: 10MB file size limit
+});
 
-// Controller to handle file upload success
-export const uploadFile = (req, res) => {
+export const uploadMiddleware = upload.single('file'); // MUST match frontend field name
+
+export const uploadFile = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    res.status(200).json({
+    const file = req.file;
+    const fileName = `${Date.now()}-${file.originalname}`;
+
+    const params = {
+      Bucket: 'trader-store',
+      Key: `media/${fileName}`,
+      Body: file.buffer, // directly use buffer from multer memory
+      ContentType: file.mimetype,
+      
+    };
+
+    const s3Result = await s3.upload(params).promise();
+
+    return res.status(200).json({
       message: 'File uploaded successfully',
-      file: {
-        originalName: req.file.originalname,
-        filename: req.file.filename,
-        path: req.file.path,
-        size: req.file.size,
-      },
+      s3Url: s3Result.Location,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
