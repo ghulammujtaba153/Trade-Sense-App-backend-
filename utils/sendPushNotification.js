@@ -4,6 +4,9 @@ dotenv.config();
 
 const ONESIGNAL_API_URL = 'https://onesignal.com/api/v1/notifications';
 
+
+
+
 export const sendPushNotification = async ({ headings, contents, userIds }) => {
   try {
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
