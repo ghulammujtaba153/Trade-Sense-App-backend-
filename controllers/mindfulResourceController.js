@@ -301,6 +301,8 @@ export const getDailyThought = async (req, res) => {
       resource.tags.includes("daily thought")
     );
 
+    console.log("dailyThoughtResources", dailyThoughtResources);
+
     if (dailyThoughtResources.length === 0) {
       return res.status(404).json({ message: "No daily thought resources found." });
     }
