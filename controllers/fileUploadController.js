@@ -14,7 +14,7 @@ const s3 = new AWS.S3({
 // Set up multer-s3
 const upload = multer({
   storage: multer.memoryStorage(), // or use multerS3 if you prefer direct streaming
-  limits: { fileSize: 10 * 1024 * 1024 }, // Optional: 10MB file size limit
+  // limits: { fileSize: 10 * 1024 * 1024 }, // Optional: 10MB file size limit
 });
 
 export const uploadMiddleware = upload.single('file'); // MUST match frontend field name

@@ -20,7 +20,7 @@ export const createPayment = async (req, res) => {
 
 export const getPayments = async (req, res) => {
     try {
-        const payments = await Payment.find({userId: req.params.id});
+        const payments = await Payment.find({userId: req.params.id}).sort({createdAt: -1});
         res.status(200).json({
             success: true,
             payments,
@@ -36,7 +36,7 @@ export const getPayments = async (req, res) => {
 
 export const getWithdrawalRequests = async (req, res) => {
     try {
-        const withdrawalRequests = await Payment.find({});
+        const withdrawalRequests = await Payment.find({}).sort({createdAt: -1}).populate("userId");
         res.status(200).json({
             success: true,
             withdrawalRequests,

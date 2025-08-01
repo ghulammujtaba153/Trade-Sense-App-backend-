@@ -49,7 +49,7 @@ export const getAffiliateRequest = async (req, res) => {
 
 export const getAffiliateRequests = async (req, res) => {
     try {
-        const affiliateRequests =  await AffiliateRequests.find({}).populate('userId');
+        const affiliateRequests =  await AffiliateRequests.find({}).populate('userId').sort({createdAt: -1});
         res.status(200).json(affiliateRequests);
     } catch (error) {
         res.status(500).json({ error: error.message });
