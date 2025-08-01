@@ -29,6 +29,9 @@ export const createAffiliate = async (req, res) => {
 
 
 
+
+
+
 export const getAffiliates = async (req, res) => {
   const { id } = req.params;
 

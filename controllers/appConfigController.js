@@ -19,6 +19,10 @@ export const createConfig = async(req, res) =>{
 }
 
 
+
+// test
+
+
 export const getConfig = async(req, res) => {
     try {
         const config = await AppConfig.findOne({});
