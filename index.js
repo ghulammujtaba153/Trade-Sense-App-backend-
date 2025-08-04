@@ -41,6 +41,7 @@ import moodRouter from './routes/moodRoutes.js';
 import welcomeRouter from './routes/welcomeRoutes.js';
 import musicRouter from './routes/musicRoutes.js';
 import './cronJobs/scheduler.js';
+import dailyThoughtRouter from './routes/dailyThoughtRoutes.js';
 
 
 
@@ -117,6 +118,7 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/mood", moodRouter);
 app.use("/api/welcome", welcomeRouter)
 app.use("/api/music", musicRouter)
+app.use("/api/daily-thought", dailyThoughtRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));

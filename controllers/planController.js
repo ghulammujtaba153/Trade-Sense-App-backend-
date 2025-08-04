@@ -77,9 +77,9 @@ export const updatePlan = async (req, res) => {
         } = req.body;
 
         // Basic validation
-        if (!name || !price || !description || !category) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
+        // if (!name || !price || !description || !category) {
+        //     return res.status(400).json({ error: 'Missing required fields' });
+        // }
 
         // Find existing plan
         const existingPlan = await Plan.findById(req.params.id);
