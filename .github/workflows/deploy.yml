@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
   deploy:
@@ -20,19 +21,47 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          # Go to your project directory
-          cd Trade-Sense-App-backend-
+        BRANCH_NAME="${GITHUB_REF##*/}"
 
-          # Pull the latest code
-          git pull origin main
+        # Dynamic container name and port
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          CONTAINER_NAME="trade-sense-backend"
+          IMAGE_NAME="trade-sense-app"
+          PORT="5000"
+        elif [[ "$BRANCH_NAME" == "dev" ]]; then
+          CONTAINER_NAME="trade-sense-backend-dev"
+          IMAGE_NAME="trade-sense-app-dev"
+          PORT="5001"
+        else
+          echo "Unsupported branch: $BRANCH_NAME"
+          exit 1
+        fi
 
-          # Stop and remove the running container if it exists
-          docker rm -f trade-sense-backend || true
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << EOF
+          set -e
 
-          # Build and run the updated app
-          docker build -t trade-sense-app .
+          # Clone repo if it doesn't exist
+          if [ ! -d ~/Trade-Sense-App-backend ]; then
+            git clone https://github.com/<your-username>/Trade-Sense-App-backend.git
+          fi
 
-          docker run -d -p 127.0.0.1:5000:5000 --env-file .env --name trade-sense-backend trade-sense-app
+          cd ~/Trade-Sense-App-backend
 
+          # Fetch & checkout correct branch
+          git fetch origin $BRANCH_NAME
+          git checkout $BRANCH_NAME
+          git pull origin $BRANCH_NAME
+
+          # Stop and remove existing container
+          docker rm -f $CONTAINER_NAME || true
+
+          # Build image
+          docker build -t $IMAGE_NAME .
+
+          # Run container on branch-specific port
+          docker run -d \
+            --name $CONTAINER_NAME \
+            --env-file .env \
+            -p 127.0.0.1:$PORT:5000 \
+            $IMAGE_NAME
         EOF
