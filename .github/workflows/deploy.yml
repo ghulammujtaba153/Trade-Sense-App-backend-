@@ -42,7 +42,7 @@ jobs:
 
           # Clone repo if it doesn't exist
           if [ ! -d ~/Trade-Sense-App-backend ]; then
-            https://github.com/ghulammujtaba153/Trade-Sense-App-backend-.git
+            https://github.com/ghulammujtaba153/Trade-Sense-App-backend-
           fi
 
           cd ~/Trade-Sense-App-backend
