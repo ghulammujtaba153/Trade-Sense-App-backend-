@@ -10,6 +10,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      BRANCH_NAME: ${{ github.ref_name }}
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -21,9 +24,9 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        BRANCH_NAME="${GITHUB_REF##*/}"
+        echo "Deploying branch: $BRANCH_NAME"
 
-        # Dynamic container name and port
+        # Set container name, image name, and port based on branch
         if [[ "$BRANCH_NAME" == "main" ]]; then
           CONTAINER_NAME="trade-sense-backend"
           IMAGE_NAME="trade-sense-app"
@@ -40,14 +43,16 @@ jobs:
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << EOF
           set -e
 
+          cd ~
+
           # Clone repo if it doesn't exist
-          if [ ! -d ~/Trade-Sense-App-backend ]; then
+          if [ ! -d "Trade-Sense-App-backend-" ]; then
             git clone https://github.com/ghulammujtaba153/Trade-Sense-App-backend-.git
           fi
 
-          cd ~/Trade-Sense-App-backend
+          cd Trade-Sense-App-backend-
 
-          # Fetch & checkout correct branch
+          # Checkout and pull the correct branch
           git fetch origin $BRANCH_NAME
           git checkout $BRANCH_NAME
           git pull origin $BRANCH_NAME
@@ -55,10 +60,10 @@ jobs:
           # Stop and remove existing container
           docker rm -f $CONTAINER_NAME || true
 
-          # Build image
+          # Build Docker image
           docker build -t $IMAGE_NAME .
 
-          # Run container on branch-specific port
+          # Run container on appropriate port
           docker run -d \
             --name $CONTAINER_NAME \
             --env-file .env \
