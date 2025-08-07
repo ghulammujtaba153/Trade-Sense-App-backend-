@@ -43,6 +43,7 @@ import musicRouter from './routes/musicRoutes.js';
 import './cronJobs/scheduler.js';
 import dailyThoughtRouter from './routes/dailyThoughtRoutes.js';
 import subscriptionRouter from './routes/subscriptionRoutes.js';
+import deleteRequstRouter from './routes/deleteRequestsRoutes.js';
 
 
 
@@ -121,6 +122,7 @@ app.use("/api/welcome", welcomeRouter)
 app.use("/api/music", musicRouter)
 app.use("/api/daily-thought", dailyThoughtRouter)
 app.use("/api/subscription", subscriptionRouter)
+app.use("/api/delete/requests", deleteRequstRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));
