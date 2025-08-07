@@ -214,37 +214,35 @@ export const updateProfile = async (req, res) => {
 
 
 export const deleteUser = async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Delete related data
     await Promise.all([
       Mood.deleteMany({ userId: id }),
       TradingForm.deleteMany({ userId: id }),
-      Habbit.deleteMany({ id }),
+      Habbit.deleteMany({ userId: id }),
       Favourite.deleteMany({ userId: id }),
       Rating.deleteMany({ userId: id }),
       Payment.deleteMany({ userId: id }),
       AffiliateRequests.deleteMany({ userId: id }),
       Enrollment.deleteMany({ student: id }),
-      Bot.deleteMany({ userId: id })
-
+      Bot.deleteMany({ userId: id }),
     ]);
 
-    
+    // Delete user
     await User.findByIdAndDelete(id);
 
-
-    user.isDeleted = true;
-    await user.save();
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully (hard)" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
+
 
 export const updateUser = async (req, res) => {
   const { profilePic, description, links, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
