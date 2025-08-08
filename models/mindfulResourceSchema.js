@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const mindfulResourceSchema = new mongoose.Schema({
+  instructor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   title: {
     type: String,
     required: true,

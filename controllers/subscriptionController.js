@@ -4,6 +4,10 @@ import Subscription from "../models/subscriptionSchema.js";
 export const createSubscription = async(req, res) => {
     try {
         const subscription = await Subscription.create(req.body);
+        const user = await User.findById(req.body.userId);
+        user.isPremiun= true;
+        user.save();
+        
         res.status(201).json(subscription);
     } catch (error) {
         res.status(500).json({error: error.message});

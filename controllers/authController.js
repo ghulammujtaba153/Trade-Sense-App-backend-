@@ -25,7 +25,13 @@ export const register = async (req, res) => {
 
     console.log("registering user", req.body);
 
-    if (!name || !email || !phone || !password) {
+    if(role !== "editor"){
+      if(!email){
+        return res.status(400).json({message: "email is not provided"})
+      }
+    }
+
+    if (!name || !password) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
     const existingUser = await User.findOne({ email, isDeleted: false });
@@ -39,8 +45,12 @@ export const register = async (req, res) => {
     }
     const data={}
     data.name = name;
-    data.phone = phone;
-    data.email = email;
+    
+    if(role !== "editor"){
+      data.email = email;
+      data.phone = phone;
+    }
+    
     data.password = bcrypt.hashSync(password, 10);
 
     if (role) {

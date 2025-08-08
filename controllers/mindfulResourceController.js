@@ -6,11 +6,12 @@ import { startOfWeek, endOfWeek } from 'date-fns';
 import OnBoardingQuestionnaire from './../models/onBoardingQuestionnaireSchema.js';
 
 export const createMindfulResource = async (req, res) => {
-    const { title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
+    const { instructor, title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
 
     
     try {
         const mindfulResource = new MindfulResource({
+            instructor,
             title,
             description,
             thumbnail,
@@ -92,7 +93,7 @@ export const deleteResource = async (req, res) => {
 
   export const updateResource = async (req, res) => {
     const { id } = req.params;
-    const { title, description, thumbnail, type, url, pillar, category, tags, isPremium, duration } = req.body;
+    const { instructor, title, description, thumbnail, type, url, pillar, category, tags, isPremium, duration } = req.body;
   
     try {
       const resource = await MindfulResource.findByIdAndUpdate(
