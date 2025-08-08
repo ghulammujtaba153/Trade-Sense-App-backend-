@@ -99,6 +99,7 @@ export const deleteResource = async (req, res) => {
       const resource = await MindfulResource.findByIdAndUpdate(
         id,
         {
+          instructor,
           title,
           description,
           thumbnail,
