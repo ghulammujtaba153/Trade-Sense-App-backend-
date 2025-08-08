@@ -35,9 +35,10 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Please provide all fields" });
     }
     const existingUser = await User.findOne({ email, isDeleted: false });
-    if (existingUser) {
+    if(role !== "editor" && existingUser){
       return res.status(400).json({ message: "User already exists" });
     }
+    
 
     const deletedUser = await User.findOne({ email, isDeleted: true });
     if (deletedUser) {
@@ -46,10 +47,10 @@ export const register = async (req, res) => {
     const data={}
     data.name = name;
     
-    if(role !== "editor"){
+    // if(role !== "editor"){
       data.email = email;
       data.phone = phone;
-    }
+    // }
     
     data.password = bcrypt.hashSync(password, 10);
 
@@ -261,14 +262,22 @@ export const updateUser = async (req, res) => {
 
     console.log("updating user", req.body);
 
-    if (!name || !email || !phone) {
+    if(role !== "editor"){
+      if (!name || !email || !phone) {
       return res.status(400).json({ message: "Please provide all fields" });
     }
+    }
+
+    
 
     const data={}
     data.name = name;
-    data.phone = phone;
-    data.email = email;
+    // if(role !== "editor"){
+      data.phone = phone;
+     data.email = email;
+    
+    // }
+    
     if(password)
       data.password = bcrypt.hashSync(password, 10);
 
