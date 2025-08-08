@@ -19,68 +19,77 @@ dotenv.config();
 
 
 export const register = async (req, res) => {
-  const { profilePic, description, links, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
+  const {
+    profilePic,
+    description,
+    links,
+    name,
+    phone,
+    email,
+    password,
+    role,
+    gender,
+    ageRange,
+    goals,
+    choosenArea,
+    questionnaireAnswers,
+  } = req.body;
 
   try {
+    console.log("Registering user", req.body);
 
-    console.log("registering user", req.body);
+    // Validate required fields
+    if (!name || !password) {
+      return res.status(400).json({ message: "Please provide name and password" });
+    }
 
-    if(role !== "editor"){
-      if(!email){
-        return res.status(400).json({message: "email is not provided"})
+    // For roles other than editor, email is required
+    if (role !== "editor" && !email) {
+      return res.status(400).json({ message: "Email is required for non-editor roles" });
+    }
+
+    // Check for existing user (only if email is provided)
+    if (email) {
+      const existingUser = await User.findOne({ email, isDeleted: false });
+      if (role !== "editor" && existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      const deletedUser = await User.findOne({ email, isDeleted: true });
+      if (deletedUser) {
+        return res.status(400).json({ message: "User deleted by the admin, use a different email" });
       }
     }
 
-    if (!name || !password) {
-      return res.status(400).json({ message: "Please provide all fields" });
-    }
-    const existingUser = await User.findOne({ email, isDeleted: false });
-    if(role !== "editor" && existingUser){
-      return res.status(400).json({ message: "User already exists" });
-    }
-    
+    // Build user data object
+    const data = {
+      name,
+      password: bcrypt.hashSync(password, 10),
+    };
 
-    const deletedUser = await User.findOne({ email, isDeleted: true });
-    if (deletedUser) {
-      return res.status(400).json({ message: "User deleted by the admin, use different mail" });
-    }
-    const data={}
-    data.name = name;
-    
-    // if(role !== "editor"){
-      data.email = email;
-      data.phone = phone;
-    // }
-    
-    data.password = bcrypt.hashSync(password, 10);
+    if (role) data.role = role;
+    if (email) data.email = email;
+    if (phone) data.phone = phone;
+    if (profilePic) data.profilePic = profilePic;
+    if (description) data.description = description;
+    if (links) data.links = links;
 
-    if (role) {
-      data.role = role;
-    }
+    if (gender) data.gender = gender;
+    if (ageRange) data.ageRange = ageRange;
+    if (goals) data.goals = goals;
+    if (choosenArea) data.choosenArea = choosenArea;
+    if (questionnaireAnswers) data.questionnaireAnswers = questionnaireAnswers;
 
-    if(profilePic) {
-      data.profilePic = profilePic;
-    }
-    if(description) {
-      data.description = description;
-    }
-    if(links) {
-      data.links = links;
-    }
-
-    if (gender, ageRange, goals, choosenArea, questionnaireAnswers) {
-      data.gender = gender;
-      data.ageRange = ageRange;
-      data.goals = goals;
-      data.choosenArea = choosenArea;
-      data.questionnaireAnswers = questionnaireAnswers;
-    }
+    // Create user
     const user = await User.create(data);
     res.status(201).json({ user });
+
   } catch (error) {
+    console.error("Error registering user:", error);
     res.status(500).json({ message: error.message });
   }
-}
+};
+
 
 
 export const registerGoogle = async (req, res) => {
@@ -256,70 +265,67 @@ export const deleteUser = async (req, res) => {
 
 
 export const updateUser = async (req, res) => {
-  const { profilePic, description, links, name, phone, email, password, role, gender, ageRange, goals, choosenArea, questionnaireAnswers } = req.body;
+  const {
+    profilePic,
+    description,
+    links,
+    name,
+    phone,
+    email,
+    password,
+    role,
+    gender,
+    ageRange,
+    goals,
+    choosenArea,
+    questionnaireAnswers,
+  } = req.body;
 
   try {
+    console.log("Updating user", req.body);
 
-    console.log("updating user", req.body);
-
-    if(role !== "editor"){
+    // For roles other than editor, name, email, and phone are required
+    if (role !== "editor") {
       if (!name || !email || !phone) {
-      return res.status(400).json({ message: "Please provide all fields" });
-    }
-    }
-
-    
-
-    const data={}
-    data.name = name;
-    // if(role !== "editor"){
-      data.phone = phone;
-     data.email = email;
-    
-    // }
-    
-    if(password)
-      data.password = bcrypt.hashSync(password, 10);
-
-    if (profilePic) {
-      data.profilePic = profilePic;
+        return res.status(400).json({ message: "Please provide name, email, and phone" });
+      }
     }
 
-    if (role) {
-      data.role = role;
-    }
+    // Build update data
+    const data = {};
 
-    if (gender, ageRange) {
-      data.gender = gender;
-      data.ageRange = ageRange;
-    }
-    if(goals){
-      data.goals = goals;
-    }
+    if (name) data.name = name;
+    if (email) data.email = email;
+    if (phone) data.phone = phone;
+    if (password) data.password = bcrypt.hashSync(password, 10);
+    if (role) data.role = role;
+    if (profilePic) data.profilePic = profilePic;
+    if (description) data.description = description;
+    if (links) data.links = links;
+    if (gender) data.gender = gender;
+    if (ageRange) data.ageRange = ageRange;
+    if (goals) data.goals = goals;
+    if (choosenArea) data.choosenArea = choosenArea;
+    if (questionnaireAnswers) data.questionnaireAnswers = questionnaireAnswers;
 
-    if(choosenArea){
-      data.choosenArea = choosenArea;
-    }
-    if(description){
-      data.description = description;
-    }
-
-    if(links){
-      data.links = links;
-    }
-
-    if(questionnaireAnswers){
-      data.questionnaireAnswers = questionnaireAnswers;
-    }
+    // Update user
     const user = await User.findByIdAndUpdate(req.params.id, data, { new: true });
-    delete user.password;
-    user.password=password
 
-    res.status(201).json({ user });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove password from the response
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.status(200).json({ user: userObj });
   } catch (error) {
+    console.error("Error updating user:", error);
     res.status(500).json({ message: error.message });
   }
-}
+};
+
 
 export const updateStatus = async (req, res) => {
   const { status } = req.body;
