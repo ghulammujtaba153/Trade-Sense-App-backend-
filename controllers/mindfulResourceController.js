@@ -60,7 +60,7 @@ export const recommendMindfulResource = async (req, res) => {
     if (category) query.category = category;
     if (type) query.type = type;
 
-    const mindfulResources = await MindfulResource.find(query).limit(8);
+    const mindfulResources = await MindfulResource.find(query).limit(12);
     res.status(200).json(mindfulResources);
   } catch (error) {
     res.status(500).json({ error: error.message });

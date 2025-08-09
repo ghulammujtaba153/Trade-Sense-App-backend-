@@ -1,4 +1,5 @@
 import Subscription from "../models/subscriptionSchema.js";
+import User from "../models/userSchema.js";
 
 
 export const createSubscription = async(req, res) => {
