@@ -59,6 +59,9 @@ app.use(bodyParser.json());
 
 configureGoogleAuth();
 
+app.use(express.json({ limit: '400mb' }));
+app.use(express.urlencoded({ limit: '400mb', extended: true }));
+
 app.use(passport.initialize());
 // app.use(passport.session());
 
