@@ -1,5 +1,5 @@
 import express from 'express';
-import { createSubscription, getSubscriptions } from '../controllers/subscriptionController.js';
+import { cancelSubscription, createSubscription, getSubscriptions } from '../controllers/subscriptionController.js';
 
 const subscriptionRouter = express.Router();
 
@@ -7,5 +7,6 @@ const subscriptionRouter = express.Router();
 
 subscriptionRouter.post("/", createSubscription);
 subscriptionRouter.get("/:id", getSubscriptions);
+subscriptionRouter.put("/cancel/:id", cancelSubscription);
 
 export default subscriptionRouter;
