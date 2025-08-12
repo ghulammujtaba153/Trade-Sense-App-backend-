@@ -7,6 +7,6 @@ const subscriptionRouter = express.Router();
 
 subscriptionRouter.post("/", createSubscription);
 subscriptionRouter.get("/:id", getSubscriptions);
-subscriptionRouter.put("/cancel/:id", cancelSubscription);
+subscriptionRouter.put("/cancel", cancelSubscription);
 
 export default subscriptionRouter;
