@@ -34,7 +34,7 @@ export const cancelSubscription = async (req, res) => {
     const { event } = req.body;
 
     // 1. Check if the webhook type is CANCELLATION
-    if (!event || event.type !== 'CANCELLATION') {
+    if (!event || (event.type !== 'CANCELLATION' && event.type !== 'TEST')) {
       return res.status(400).json({ error: 'Invalid event type' });
     }
 
