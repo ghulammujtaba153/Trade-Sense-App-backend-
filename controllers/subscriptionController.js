@@ -34,9 +34,9 @@ export const cancelSubscription = async (req, res) => {
     const { event } = req.body;
 
     // 1. Check if the webhook type is CANCELLATION
-    if (!event || (event.type !== 'CANCELLATION' && event.type !== 'TEST')) {
-      return res.status(400).json({ error: 'Invalid event type' });
-    }
+    // if (!event || (event.type !== 'CANCELLATION' && event.type !== 'TEST')) {
+    //   return res.status(400).json({ error: 'Invalid event type' });
+    // }
 
     // 2. Find the subscription record by app_user_id
     const subscription = await Subscription.findOne({ appUserId: event.app_user_id });
