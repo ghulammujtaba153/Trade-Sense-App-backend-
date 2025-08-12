@@ -45,8 +45,8 @@ export const sendOtp = async (req, res) => {
     // Configure Hostinger SMTP transporter
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER, // your full email (e.g. info@yourdomain.com)
         pass: process.env.EMAIL_PASS, // email password from Hostinger
