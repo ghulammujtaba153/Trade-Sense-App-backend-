@@ -44,6 +44,7 @@ import './cronJobs/scheduler.js';
 import dailyThoughtRouter from './routes/dailyThoughtRoutes.js';
 import subscriptionRouter from './routes/subscriptionRoutes.js';
 import deleteRequstRouter from './routes/deleteRequestsRoutes.js';
+import Stripe from 'stripe';
 
 
 
@@ -139,6 +140,31 @@ app.use('/api/file', uploadRouter);
 app.use("/", (req, res) => {
     res.send("Server is running");
 });
+
+
+
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+
+app.post('/create-payment-intent', async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      automatic_payment_methods: { enabled: true }, 
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 
 
 
