@@ -45,6 +45,7 @@ import dailyThoughtRouter from './routes/dailyThoughtRoutes.js';
 import subscriptionRouter from './routes/subscriptionRoutes.js';
 import deleteRequstRouter from './routes/deleteRequestsRoutes.js';
 import Stripe from 'stripe';
+import stripeRouter from './routes/stripeRoutes.js';
 
 
 
@@ -127,6 +128,7 @@ app.use("/api/music", musicRouter)
 app.use("/api/daily-thought", dailyThoughtRouter)
 app.use("/api/subscription", subscriptionRouter)
 app.use("/api/delete/requests", deleteRequstRouter)
+app.use("/api/stripe", stripeRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));
@@ -144,25 +146,7 @@ app.use("/", (req, res) => {
 
 
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-
-app.post('/create-payment-intent', async (req, res) => {
-  try {
-    const { amount } = req.body;
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: 'usd',
-      automatic_payment_methods: { enabled: true }, 
-    });
-
-    res.json({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 
 
