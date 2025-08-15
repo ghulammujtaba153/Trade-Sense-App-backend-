@@ -53,7 +53,7 @@ const app = express();
 dotenv.config();
 
 app.use(cors({
-    origin: ['http://localhost:5173', "http://13.61.177.83:3000", 'https://trade-sense-admin.vercel.app', 'http://localhost:3000', "https://trade-sense-app-1.vercel.app"],
+    origin: ['http://localhost:5173', "http://13.61.177.83:3000", 'https://trade-sense-admin.vercel.app', 'http://localhost:3000', "https://trade-sense-app-1.vercel.app", "https://dev-trade-sense-app-1.vercel.app"],
     credentials: true,
   }));
   
