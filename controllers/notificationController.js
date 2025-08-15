@@ -4,6 +4,7 @@ import User from "../models/userSchema.js";
 import sendNotificationToUser from "../test.js";
 
 
+
 export const createNotification = async (req, res) => {
   try {
     const {
@@ -332,20 +333,17 @@ export const getNotificationsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    console.log("userId", userId);
-
-   
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
     const now = new Date();
 
-    
+    // Fetch notifications
     const notifications = await Notification.find({
-      sendAt: { $gte: user.createdAt, $lte: now }, 
+      sendAt: { $gte: user.createdAt, $lte: now },
       $or: [
         { sendType: "now" },
-        { sendType: "scheduled", sendAt: { $lte: now } }, 
+        { sendType: "scheduled", sendAt: { $lte: now } },
       ],
       $or: [
         { targetType: "all" },
@@ -354,7 +352,22 @@ export const getNotificationsByUserId = async (req, res) => {
       ],
     }).sort({ sendAt: -1 });
 
-    res.status(200).json({ notifications });
+    // Add `isDelivered` field for each notif
+    const notificationsWithDelivery = await Promise.all(
+      notifications.map(async (notif) => {
+        const delivered = await DeliveredNotification.findOne({
+          receiverId: user._id,
+          notificationId: notif._id,
+        });
+
+        return {
+          ...notif.toObject(),
+          isDelivered: delivered ? delivered.isDelivered : false,
+        };
+      })
+    );
+
+    res.status(200).json({ notifications: notificationsWithDelivery });
   } catch (error) {
     console.error("Error fetching notifications for user:", error);
     res.status(500).json({ message: "Internal server error." });
