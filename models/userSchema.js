@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     },
     ageRange: {
       type: String,
-      enum: ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+      // enum: ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
       default: "18-24"
     },
     email: {

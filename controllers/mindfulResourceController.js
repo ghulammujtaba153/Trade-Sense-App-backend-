@@ -4,6 +4,7 @@ import User from "../models/userSchema.js";
 import HabitLog from "../models/habitLogSchema.js";
 import { startOfWeek, endOfWeek } from 'date-fns';
 import OnBoardingQuestionnaire from './../models/onBoardingQuestionnaireSchema.js';
+import DailyThought from "../models/dailyThoughtSchema.js";
 
 export const createMindfulResource = async (req, res) => {
     const { instructor, title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
@@ -60,7 +61,26 @@ export const recommendMindfulResource = async (req, res) => {
     if (category) query.category = category;
     if (type) query.type = type;
 
-    const mindfulResources = await MindfulResource.find(query).limit(12);
+    const mindfulResources = await MindfulResource.find(query).populate("instructor").limit(6);
+    res.status(200).json(mindfulResources);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export const topPickResource = async (req, res) => {
+  const { pillar, category, type } = req.query;
+
+  try {
+    const query = { isDeleted: false };
+
+    if (pillar) query.pillar = pillar;
+    if (category) query.category = category;
+    if (type) query.type = type;
+
+    const mindfulResources = await MindfulResource.find(query).populate("instructor").limit(7).sort({ likes: -1 });
     res.status(200).json(mindfulResources);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -137,7 +157,7 @@ export const deleteResource = async (req, res) => {
     if (category) query.category = category;
     if (type) query.type = type;
 
-    const mindfulResources = await MindfulResource.find(query);
+    const mindfulResources = await MindfulResource.find(query).populate("instructor");
     res.status(200).json(mindfulResources);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -227,7 +247,7 @@ export const bundleResources = async (req, res) => {
         if (type) query.type = type;
 
         // First, try to find up to 4 matching resources
-        let resources = await MindfulResource.find(query)
+        let resources = await MindfulResource.find(query).populate("instructor")
           .sort({ createdAt: -1 })
           .limit(4);
 
@@ -262,11 +282,11 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
   const {id} = req.params;
   try {
     
-    const audioResources = await MindfulResource.find({ type: "audio", isDeleted: false });
+    const audioResources = await MindfulResource.find({ type: "audio", isDeleted: false }).populate("instructor");
     const randomAudio = audioResources[Math.floor(Math.random() * audioResources.length)];
 
     
-    const videoResources = await MindfulResource.find({ type: "video", isDeleted: false });
+    const videoResources = await MindfulResource.find({ type: "video", isDeleted: false }).populate("instructor");
     const randomVideo = videoResources[Math.floor(Math.random() * videoResources.length)];
 
 
@@ -296,24 +316,19 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
 
 export const getDailyThought = async (req, res) => {
   try {
-    const resources = await MindfulResource.find({ type: "audio", isDeleted: false });
+    const dailyThoughtResources = await DailyThought.find({}).populate("instructor");
 
-    // Filter resources that have the tag "daily thought"
-    const dailyThoughtResources = resources.filter((resource) =>
-      resource.tags.includes("daily thought")
-    );
-
-    console.log("dailyThoughtResources", dailyThoughtResources);
+    
 
     if (dailyThoughtResources.length === 0) {
       return res.status(404).json({ message: "No daily thought resources found." });
     }
 
-    // Pick a random resource from the filtered list
-    const randomResource =
-      dailyThoughtResources[Math.floor(Math.random() * dailyThoughtResources.length)];
 
-    res.status(200).json(randomResource);
+    console.log(dailyThoughtResources)
+
+
+    res.status(200).json(dailyThoughtResources[dailyThoughtResources.length - 1]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
