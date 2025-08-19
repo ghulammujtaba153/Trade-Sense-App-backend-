@@ -42,6 +42,7 @@ const notificationSchema = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+  seen: [],
   status: {
     type: String,
     enum: ["sent", "scheduled"],

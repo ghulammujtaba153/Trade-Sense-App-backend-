@@ -6,7 +6,7 @@ const notificationRouter = express.Router();
 notificationRouter.post("/create", createNotification);
 notificationRouter.get("/all", getAllNotifications);
 notificationRouter.get("/history", getNotificationHistory);
-notificationRouter.patch("/seen/:id", markNotificationAsSeen);
+notificationRouter.post("/seen/:id", markNotificationAsSeen);
 notificationRouter.put("/:id", updateNotification);
 notificationRouter.delete("/:id", deleteNotification)
 notificationRouter.get("/:userId", getNotificationsByUserId);

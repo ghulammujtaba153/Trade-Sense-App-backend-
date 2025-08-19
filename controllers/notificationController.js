@@ -296,15 +296,14 @@ const sendScheduledNotifications = async () => {
 export const markNotificationAsSeen = async (req, res) => {
   try {
     const { id } = req.params;
+    const {userId} = req.body;
 
     const notification = await Notification.findById(id);
 
-    if (!notification) {
-      return res.status(404).json({ message: "Notification not found" });
-    }
+    notification.seen.push(userId)
 
-    notification.seen = true;
-    await notification.save();
+    notification.save();
+
 
     res
       .status(200)
@@ -338,7 +337,10 @@ export const getNotificationsByUserId = async (req, res) => {
 
     const now = new Date();
 
+<<<<<<< HEAD
     // Fetch notifications
+=======
+>>>>>>> dev
     const notifications = await Notification.find({
       sendAt: { $gte: user.createdAt, $lte: now },
       $or: [
@@ -352,6 +354,7 @@ export const getNotificationsByUserId = async (req, res) => {
       ],
     }).sort({ sendAt: -1 });
 
+<<<<<<< HEAD
     // Add `isDelivered` field for each notif
     const notificationsWithDelivery = await Promise.all(
       notifications.map(async (notif) => {
@@ -368,9 +371,26 @@ export const getNotificationsByUserId = async (req, res) => {
     );
 
     res.status(200).json({ notifications: notificationsWithDelivery });
+=======
+    const result = notifications.map((notification) => {
+      const isSeen = notification.seen.includes(userId);
+      const obj = notification.toObject();
+
+      // remove recipients from the returned object
+      delete obj.recipients;
+      delete obj.targetRoles;
+      delete obj.seen;
+
+      return { ...obj, isSeen };
+    });
+
+    res.status(200).json({ notifications: result });
+
+>>>>>>> dev
   } catch (error) {
     console.error("Error fetching notifications for user:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
 
