@@ -337,10 +337,6 @@ export const getNotificationsByUserId = async (req, res) => {
 
     const now = new Date();
 
-<<<<<<< HEAD
-    // Fetch notifications
-=======
->>>>>>> dev
     const notifications = await Notification.find({
       sendAt: { $gte: user.createdAt, $lte: now },
       $or: [
@@ -354,24 +350,24 @@ export const getNotificationsByUserId = async (req, res) => {
       ],
     }).sort({ sendAt: -1 });
 
-<<<<<<< HEAD
+
     // Add `isDelivered` field for each notif
-    const notificationsWithDelivery = await Promise.all(
-      notifications.map(async (notif) => {
-        const delivered = await DeliveredNotification.findOne({
-          receiverId: user._id,
-          notificationId: notif._id,
-        });
+    // const notificationsWithDelivery = await Promise.all(
+    //   notifications.map(async (notif) => {
+    //     const delivered = await DeliveredNotification.findOne({
+    //       receiverId: user._id,
+    //       notificationId: notif._id,
+    //     });
 
-        return {
-          ...notif.toObject(),
-          isDelivered: delivered ? delivered.isDelivered : false,
-        };
-      })
-    );
+    //     return {
+    //       ...notif.toObject(),
+    //       isDelivered: delivered ? delivered.isDelivered : false,
+    //     };
+    //   })
+    // );
 
-    res.status(200).json({ notifications: notificationsWithDelivery });
-=======
+    // res.status(200).json({ notifications: notificationsWithDelivery });
+    
     const result = notifications.map((notification) => {
       const isSeen = notification.seen.includes(userId);
       const obj = notification.toObject();
@@ -386,7 +382,6 @@ export const getNotificationsByUserId = async (req, res) => {
 
     res.status(200).json({ notifications: result });
 
->>>>>>> dev
   } catch (error) {
     console.error("Error fetching notifications for user:", error);
     res.status(500).json({ message: "Internal server error." });
