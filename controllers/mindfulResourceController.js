@@ -282,7 +282,7 @@ export const bundleResources = async (req, res) => {
 
 export const RandomOneAudioOneVideoResource = async (req, res) => {
   const {id} = req.params;
-  const {userId} = req.body
+  
   try {
     
     const audioResources = await MindfulResource.find({ type: "audio", isDeleted: false }).populate("instructor");
@@ -303,7 +303,7 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
     }).sort({ createdAt: -1 });
 
 
-    const tradingTrend = await TradingForm.find({ userId: userId }).sort({ createdAt: -1 }).limit(1);
+    const tradingTrend = await TradingForm.find({ userId: id }).sort({ createdAt: -1 }).limit(1);
 
     const tradingTrendLogs = tradingTrend.map((log) => {
       let trendDirection = '';
