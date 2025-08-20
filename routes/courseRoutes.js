@@ -8,7 +8,7 @@ courseRouter.post("/", createCourse);
 
 courseRouter.get("/", getAllCourses);
 
-courseRouter.get("/:id", getCourse);
+courseRouter.post("/get", getCourse);
 
 courseRouter.put("/:id", updateCourse);
 

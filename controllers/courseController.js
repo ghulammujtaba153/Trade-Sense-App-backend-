@@ -85,8 +85,7 @@ export const getAllCourses = async (req, res) => {
 };
 
 export const getCourse = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.body.userId; // Assuming you have user ID from auth middleware
+  const {id, userId} = req.body // Assuming you have user ID from auth middleware
   
   // Debug: Log the userId to make sure it's correct
   console.log('User ID:', userId);
