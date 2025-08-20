@@ -1,3 +1,4 @@
+import Account from "../models/accountSchema.js";
 import AffiliateRequests from "../models/affiliateRequestsSchema.js";
 
 
@@ -62,6 +63,11 @@ export const updateStatus = async (req, res) => {
 
     try {
         const affiliateRequest = await AffiliateRequests.findByIdAndUpdate(id, req.body, {new: true});
+        if(req.body.status === 'accepted') {
+            const user = await Account.create({ userId: affiliateRequest.userId, balance: 0, enrollmentProfit: req.body.enrollmentProfit, visitProfit: req.body.visitProfit });
+            user.isAffiliate = true;
+            await user.save();
+        }
         res.status(200).json(affiliateRequest);
     } catch (error) {
         res.status(500).json({ error: error.message });

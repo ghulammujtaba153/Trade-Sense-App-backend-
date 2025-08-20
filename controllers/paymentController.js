@@ -52,6 +52,13 @@ export const getWithdrawalRequests = async (req, res) => {
 export const updateStatus = async (req, res) => {
     try {
         const payment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (req.body.status === 'completed') {
+            const user = await Account.findOne({ userId: payment.userId });
+            if (user) {
+                user.balance -= payment.amount;
+                await user.save();
+            }
+        }
         res.status(200).json({
             success: true,
             payment,

@@ -86,7 +86,12 @@ export const getAllCourses = async (req, res) => {
 
 export const getCourse = async (req, res) => {
   const { id } = req.params;
-
+  const userId = req.body.userId; // Assuming you have user ID from auth middleware
+  
+  // Debug: Log the userId to make sure it's correct
+  console.log('User ID:', userId);
+  console.log('User ID type:', typeof userId);
+  
   try {
     const courses = await Course.aggregate([
       {
@@ -166,6 +171,42 @@ export const getCourse = async (req, res) => {
               },
             },
             {
+              $lookup: {
+                from: "resourceprogresses", // Ensure this matches your actual collection name
+                let: { moduleIdStr: { $toString: "$_id" } },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$resourceId", "$$moduleIdStr"] },
+                          {
+                            $or: [
+                              // Handle case where userId is stored as ObjectId
+                              { $eq: ["$userId", new mongoose.Types.ObjectId(userId)] },
+                              // Handle case where userId is stored as string
+                              { $eq: ["$userId", userId] },
+                              // Handle case where userId needs to be converted to string for comparison
+                              { $eq: [{ $toString: "$userId" }, userId] }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      currentTime: 1,
+                      userId: 1, // Keep for debugging
+                      resourceId: 1 // Keep for debugging
+                    },
+                  },
+                ],
+                as: "progressData",
+              },
+            },
+            {
               $addFields: {
                 favourites: {
                   $map: {
@@ -174,24 +215,48 @@ export const getCourse = async (req, res) => {
                     in: "$$f.userId",
                   },
                 },
+                currentTime: {
+                  $ifNull: [
+                    { $arrayElemAt: ["$progressData.currentTime", 0] },
+                    0
+                  ]
+                },
+               
               },
             },
+            // Temporarily comment out the $project stage for debugging
+            // {
+            //   $project: {
+            //     progressData: 0, // Remove the temporary progressData field
+            //   },
+            // },
           ],
           as: "courseModules",
         },
       }
-      
     ]);
-
+    
     if (!courses || courses.length === 0) {
       return res.status(404).json({ message: "Course not found" });
     }
-
+    
+    // Debug: Log the result for the module that should have progress
+    const moduleWithProgress = courses[0].courseModules.find(m => m._id.toString() === "687237074f61e55a99b896cc");
+    if (moduleWithProgress) {
+      console.log('Module with expected progress:', {
+        moduleId: moduleWithProgress._id,
+        currentTime: moduleWithProgress.currentTime,
+        debugData: moduleWithProgress.debugProgressData
+      });
+    }
+    
     res.status(200).json(courses[0]);
   } catch (error) {
+    console.error('Aggregation error:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const updateCourse = async (req, res) => {
   try {

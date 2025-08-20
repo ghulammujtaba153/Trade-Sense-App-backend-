@@ -5,6 +5,8 @@ import HabitLog from "../models/habitLogSchema.js";
 import { startOfWeek, endOfWeek } from 'date-fns';
 import OnBoardingQuestionnaire from './../models/onBoardingQuestionnaireSchema.js';
 import DailyThought from "../models/dailyThoughtSchema.js";
+import TradingForm from './../models/tradingFormSchema.js';
+import DailyQuote from "../models/dailyQuoteSchema.js";
 
 export const createMindfulResource = async (req, res) => {
     const { instructor, title, description, thumbnail, type, url, category, pillar, duration, isPremium, tags} = req.body;
@@ -300,12 +302,34 @@ export const RandomOneAudioOneVideoResource = async (req, res) => {
     }).sort({ createdAt: -1 });
 
 
+    const tradingTrend = await TradingForm.find({ userId: id }).sort({ createdAt: -1 }).limit(1);
+
+    const tradingTrendLogs = tradingTrend.map((log) => {
+      let trendDirection = '';
+      if (log.exitPrice > log.entryPrice) {
+        trendDirection = 'upward';
+      } else if (log.exitPrice < log.entryPrice) {
+        trendDirection = 'downward';
+      } else {
+        trendDirection = 'neutral';
+      }
+      return {
+        tradeDate: log.tradeDate,
+        trendDirection, // Only show upward or downward
+      };
+    });
+
+
+    const quote= await DailyQuote.find({}).sort({ createdAt: -1 }).limit(1);
+
+
+
     res.status(200).json({
       audio: randomAudio || null,
       video: randomVideo || null,
-      quotation: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+      quotation: quote[0].quote || "Success is not final, failure is not fatal: it is the courage to continue that counts.",
       logs: habitLogs,
-
+      tradingTrend: tradingTrendLogs
     });
   } catch (error) {
     console.error("Error fetching random resources:", error);

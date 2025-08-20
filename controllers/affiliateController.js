@@ -1,33 +1,54 @@
 import Affiliate from "../models/affiliateSchema.js";
 import mongoose from "mongoose"
 import User from "../models/userSchema.js";
+import Account from "../models/accountSchema.js";
+import Course from './../models/coursesSchema.js';
+
+
 
 export const createAffiliate = async (req, res) => {
 
-  const {referrerUserId, courseId, type} = req.body
+  const { referrerUserId, courseId, type } = req.body;
 
-    try {
-      console.log(req.body)
+  try {
+    console.log(req.body);
 
-        const user = await User.findOne({affiliateCode: req.body.referrerUserId});
+    const user = await User.findOne({ affiliateCode: referrerUserId });
+    if (!user) return res.status(404).json({ error: "Referrer user not found" });
 
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ error: "Course not found" });
 
-        const data ={}
+    const data = {
+      referrerUserId: user._id,
+      courseId,
+      type
+    };
 
+    const affiliate = await Affiliate.create(data);
 
-        data.referrerUserId = user._id;
-        data.courseId = courseId;
-        data.type = type
-
-        const affiliate = await Affiliate.create(data);
-        res.status(200).json(affiliate);
-    } catch (error) {
-      console.log(error)
-      req.status(500).json({ error: error.message });
+    let account = await Account.findOne({ userId: user._id });
+    if (!account) {
+      account = await Account.create({ userId: user._id, balance: 0, enrollmentProfit: 2, visitProfit: 2 });
     }
+
+    let profitToAdd = 0;
+
+    if (type === 'visited') {
+      profitToAdd = (account.visitProfit / 100) * course.price;
+    } else if (type === 'enrolled') {
+      profitToAdd = (account.enrollmentProfit / 100) * course.price;
+    }
+
+    account.balance += profitToAdd;
+    await account.save();
+
+    res.status(200).json(affiliate);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
 }
-
-
 
 
 
@@ -59,7 +80,7 @@ export const getAffiliates = async (req, res) => {
       stats[entry._id] = entry.count;
     });
 
-    stats.money = stats.visited * .5 + stats.enrolled * 5;
+    stats.money = await Account.findOne({ userId: id }).then(account => account ? account.balance : 0);
 
     res.status(200).json(stats);
   } catch (error) {
