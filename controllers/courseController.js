@@ -1,5 +1,7 @@
 import Course from "../models/coursesSchema.js";
 import mongoose from "mongoose";
+import ResourceCount from "../models/resourceCountSchema.js";
+
 
 export const createCourse = async (req, res) => {
   try {
@@ -19,6 +21,7 @@ export const createCourse = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 export const getAllCourses = async (req, res) => {
   try {
@@ -87,9 +90,6 @@ export const getAllCourses = async (req, res) => {
 export const getCourse = async (req, res) => {
   const {id, userId} = req.body // Assuming you have user ID from auth middleware
   
-  // Debug: Log the userId to make sure it's correct
-  console.log('User ID:', userId);
-  console.log('User ID type:', typeof userId);
   
   try {
     const courses = await Course.aggregate([
@@ -206,12 +206,108 @@ export const getCourse = async (req, res) => {
               },
             },
             {
+              $lookup: {
+                from: "resourcecounts", // Try plural first
+                let: { 
+                  moduleIdStr: { $toString: "$_id" },
+                  moduleIdObj: "$_id"
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $or: [
+                              // Try matching as string
+                              { $eq: ["$resourceId", "$moduleIdStr"] },
+                              // Try matching as ObjectId if resourceId is stored as ObjectId
+                              { $eq: ["$resourceId", "$moduleIdObj"] }
+                            ]
+                          },
+                          {
+                            $or: [
+                              // Handle case where userId is stored as ObjectId
+                              { $eq: ["$userId", new mongoose.Types.ObjectId(userId)] },
+                              // Handle case where userId is stored as string
+                              { $eq: ["$userId", userId] },
+                              // Handle case where userId needs to be converted to string for comparison
+                              { $eq: [{ $toString: "$userId" }, userId] }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      count: 1,
+                      userId: 1, // Keep for debugging
+                      resourceId: 1, // Keep for debugging
+                      userIdType: { $type: "$userId" }, // Debug field
+                      resourceIdType: { $type: "$resourceId" } // Debug field
+                    },
+                  },
+                ],
+                as: "countData",
+              },
+            },
+            {
+              $lookup: {
+                from: "resourcecount", // Try singular as fallback
+                let: { 
+                  moduleIdStr: { $toString: "$_id" },
+                  moduleIdObj: "$_id"
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          {
+                            $or: [
+                              // Try matching as string
+                              { $eq: ["$resourceId", "$moduleIdStr"] },
+                              // Try matching as ObjectId if resourceId is stored as ObjectId
+                              { $eq: ["$resourceId", "$moduleIdObj"] }
+                            ]
+                          },
+                          {
+                            $or: [
+                              // Handle case where userId is stored as ObjectId
+                              { $eq: ["$userId", new mongoose.Types.ObjectId(userId)] },
+                              // Handle case where userId is stored as string
+                              { $eq: ["$userId", userId] },
+                              // Handle case where userId needs to be converted to string for comparison
+                              { $eq: [{ $toString: "$userId" }, userId] }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      count: 1,
+                      userId: 1, // Keep for debugging
+                      resourceId: 1, // Keep for debugging
+                      userIdType: { $type: "$userId" }, // Debug field
+                      resourceIdType: { $type: "$resourceId" } // Debug field
+                    },
+                  },
+                ],
+                as: "countDataFallback",
+              },
+            },
+            {
               $addFields: {
                 favourites: {
                   $map: {
                     input: "$favourites",
                     as: "f",
-                    in: "$$f.userId",
+                    in: "$f.userId",
                   },
                 },
                 currentTime: {
@@ -220,13 +316,31 @@ export const getCourse = async (req, res) => {
                     0
                   ]
                 },
-               
+                accessCount: {
+                  $ifNull: [
+                    {
+                      $cond: {
+                        if: { $gt: [{ $size: "$countData" }, 0] },
+                        then: { $arrayElemAt: ["$countData.count", 0] },
+                        else: { $arrayElemAt: ["$countDataFallback.count", 0] }
+                      }
+                    },
+                    0
+                  ]
+                },
+                // Debug fields - remove these after testing
+                debugCountData: "$countData",
+                debugCountDataFallback: "$countDataFallback",
+                debugModuleId: { $toString: "$_id" },
+                debugUserId: userId
               },
             },
-            // Temporarily comment out the $project stage for debugging
+            // Clean up temporary fields - comment out for debugging
             // {
             //   $project: {
-            //     progressData: 0, // Remove the temporary progressData field
+            //     progressData: 0,
+            //     countData: 0,
+            //     countDataFallback: 0,
             //   },
             // },
           ],
@@ -239,14 +353,77 @@ export const getCourse = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
     
-    // Debug: Log the result for the module that should have progress
+    // Debug: Check the first module that has the ResourceCount record
+    console.log('=== CHECKING MODULE WITH RESOURCECOUNT RECORD ===');
+    const moduleWithCount = courses[0].courseModules.find(m => m._id.toString() === "685e8ed3bd14ca5de7533821");
+    if (moduleWithCount) {
+      console.log('Module with ResourceCount record (685e8ed3bd14ca5de7533821):', {
+        moduleId: moduleWithCount._id,
+        currentTime: moduleWithCount.currentTime,
+        accessCount: moduleWithCount.accessCount,
+        debugCountData: moduleWithCount.debugCountData,
+        debugCountDataFallback: moduleWithCount.debugCountDataFallback,
+        debugModuleId: moduleWithCount.debugModuleId,
+        debugUserId: moduleWithCount.debugUserId
+      });
+    }
+
+    // Debug: Also check the module you were originally looking for
+    console.log('=== CHECKING MODULE WITH PROGRESS (687237074f61e55a99b896cc) ===');
     const moduleWithProgress = courses[0].courseModules.find(m => m._id.toString() === "687237074f61e55a99b896cc");
     if (moduleWithProgress) {
-      console.log('Module with expected progress:', {
+      console.log('Module with progress data:', {
         moduleId: moduleWithProgress._id,
         currentTime: moduleWithProgress.currentTime,
-        debugData: moduleWithProgress.debugProgressData
+        accessCount: moduleWithProgress.accessCount,
+        debugCountData: moduleWithProgress.debugCountData,
+        debugCountDataFallback: moduleWithProgress.debugCountDataFallback,
+        debugModuleId: moduleWithProgress.debugModuleId,
+        debugUserId: moduleWithProgress.debugUserId
       });
+    }
+    
+    // Additional debugging: Check what's actually in the ResourceCount collection
+    console.log('=== DEBUGGING RESOURCE COUNT COLLECTION ===');
+    console.log('Looking for userId:', userId, 'type:', typeof userId);
+    console.log('Looking for resourceId: 685e8ed3bd14ca5de7533821 (the one with actual count record)');
+    
+    // Direct query to ResourceCount collection for debugging
+    try {
+      // Check the specific record that should exist
+      const directQuerySpecific = await mongoose.connection.db.collection('resourcecounts').find({
+        userId: new mongoose.Types.ObjectId(userId),
+        resourceId: "685e8ed3bd14ca5de7533821"
+      }).toArray();
+      console.log('Direct query for specific record (resourcecounts):', directQuerySpecific);
+      
+      // Try alternative userId formats
+      const directQueryString = await mongoose.connection.db.collection('resourcecounts').find({
+        userId: userId,
+        resourceId: "685e8ed3bd14ca5de7533821"
+      }).toArray();
+      console.log('Direct query with string userId:', directQueryString);
+      
+      // Try with ObjectId resourceId
+      const directQueryObjId = await mongoose.connection.db.collection('resourcecounts').find({
+        userId: new mongoose.Types.ObjectId(userId),
+        resourceId: new mongoose.Types.ObjectId("685e8ed3bd14ca5de7533821")
+      }).toArray();
+      console.log('Direct query with ObjectId resourceId:', directQueryObjId);
+      
+      // Get all records for this user
+      const allUserRecords = await mongoose.connection.db.collection('resourcecounts').find({
+        userId: new mongoose.Types.ObjectId(userId)
+      }).toArray();
+      console.log('All ResourceCount records for this user:', allUserRecords);
+      
+      // Check collection names
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      const collectionNames = collections.map(c => c.name).filter(name => name.includes('resource'));
+      console.log('Available collections containing "resource":', collectionNames);
+      
+    } catch (debugError) {
+      console.error('Debug query error:', debugError);
     }
     
     res.status(200).json(courses[0]);

@@ -47,6 +47,7 @@ import deleteRequstRouter from './routes/deleteRequestsRoutes.js';
 import Stripe from 'stripe';
 import stripeRouter from './routes/stripeRoutes.js';
 import dailyQuoteRouter from './routes/dailyQuoteRoutes.js';
+import resourceCountRouter from './routes/resourceCountRoutes.js';
 
 
 
@@ -131,6 +132,7 @@ app.use("/api/subscription", subscriptionRouter)
 app.use("/api/delete/requests", deleteRequstRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/daily-quote", dailyQuoteRouter)
+app.use("/api/resource-count", resourceCountRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));
