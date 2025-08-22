@@ -13,6 +13,8 @@ export const createGoal = async (req, res) => {
     }
 }
 
+// goals
+
 export const getGoals = async (req, res) => {
     try {
         const goals = await Goals.find().populate('userId');
