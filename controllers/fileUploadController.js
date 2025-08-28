@@ -1,6 +1,7 @@
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import { S3Client } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -55,5 +56,46 @@ export const uploadFile = async (req, res) => {
       error: 'Upload failed',
       details: error.message
     });
+  }
+};
+
+
+
+// Controller to generate signed URL
+export const generateUploadUrl = async (req, res) => {
+  try {
+    const { fileName, contentType } = req.query;
+
+    if (!fileName || !contentType) {
+      return res.status(400).json({ error: "fileName and contentType are required" });
+    }
+
+    const s3 = new S3Client({
+      region: "eu-north-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+      },
+    });
+
+    const key = `media/${Date.now()}-${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: "trader-store",   // your bucket
+      Key: key,
+      ContentType: contentType,
+            // allow public streaming after upload
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 }); // 1 hour
+
+    return res.status(200).json({
+      uploadUrl,
+      fileKey: key,
+      publicUrl: `https://trader-store.s3.eu-north-1.amazonaws.com/${key}`
+    });
+  } catch (err) {
+    console.error("Error generating signed URL:", err);
+    return res.status(500).json({ error: "Failed to generate signed URL" });
   }
 };
