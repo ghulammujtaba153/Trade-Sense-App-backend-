@@ -62,6 +62,9 @@ export const sendOtp = async (req, res) => {
       }
     });
 
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+
     // Send email
     await transporter.sendMail({
       from: `"Trader365" <${process.env.EMAIL_USER}>`,
@@ -69,25 +72,67 @@ export const sendOtp = async (req, res) => {
       subject: "Your OTP Code",
       text: `Your OTP code is: ${otpCode}`,
       html: `
-  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background-color: #ffffff;">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <h2 style="margin: 0; color: #4A90E2;">Trader365</h2>
-      <p style="color: #888; margin-top: 4px;">Secure Verification</p>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trader365 - Verification Code</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+
+  <div style="width: 100%; height: 100vh; background-color: #0b1016; display: flex; flex-direction: column; justify-content: center; border-radius: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
     
-    <div style="text-align: center;">
-      <p style="font-size: 16px; color: #333;">Hello,</p>
-      <p style="font-size: 16px; color: #333;">Use the following OTP code to complete your verification:</p>
-      <div style="font-size: 32px; font-weight: bold; margin: 20px 0; color: #4A90E2;">${otpCode}</div>
-      <p style="font-size: 14px; color: #555;">This code will expire in 10 minutes.</p>
+    <!-- Header Section -->
+    <div style="text-align: center; padding: 40px 24px 20px;">
+      <div style="text-align: center; padding: 16px;">
+        <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto; max-width: 180px;" />
+      </div>
+
+      <h2 style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 12px 0 8px;">Hi Diana,</h2>
+      <p style="color: #a0aec0; font-size: 14px; margin: 0; line-height: 1.5;">
+        It is a long established fact that a<br>reader will be distracted.
+      </p>
     </div>
 
-    <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+    <!-- Verification Code Section -->
+    <div style="padding: 32px 24px; text-align: center;">
+      <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0 0 24px; letter-spacing: -0.5px;">
+        Verification Code
+      </h1>
 
-    <p style="font-size: 12px; color: #999; text-align: center;">
-      If you did not request this code, please ignore this email or contact support.
-    </p>
+      <!-- Code Display -->
+      <div style="background: #70C2E8; border-radius: 12px; padding: 20px; margin: 24px auto; box-shadow: 0 4px 16px rgba(79, 156, 249, 0.3); width: fit-content;">
+        <div style="font-size: 36px; font-weight: 700; color: #ffffff; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+          ${otpCode}
+        </div>
+      </div>
+
+      <p style="color: #a0aec0; font-size: 14px; line-height: 1.6; margin: 24px 0 0; padding: 0 16px;">
+        It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using.
+      </p>
+    </div>
+
   </div>
+
+  <!-- Mobile Responsive Styles -->
+  <style>
+    @media only screen and (max-width: 600px) {
+      .code-text {
+        font-size: 28px !important;
+        letter-spacing: 6px !important;
+      }
+      .title {
+        font-size: 28px !important;
+      }
+    }
+  </style>
+
+</body>
+</html>
+
+      
+  
 `,
 
     });
