@@ -28,7 +28,7 @@ export const welcomeMail = async (email, name) => {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Welcome to Trader 365</title>
+    <!-- <title>Welcome to Trader 365</title> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       html, body {
@@ -49,7 +49,7 @@ export const welcomeMail = async (email, name) => {
         width: 100%;
         margin: 0 auto;
         background: #0B1016;
-        border-radius: 18px 18px 0 0;
+        /* border-radius: 18px 18px 0 0; */
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
         padding: 6px;
         overflow-x: hidden; /* Prevent horizontal overflow */
@@ -344,6 +344,8 @@ export const welcomeMail = async (email, name) => {
 </html>
     `;
 
+    console.log("Sending welcome email to", email);
+
     await transporter.sendMail({
       from: `"Trader365" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -351,13 +353,15 @@ export const welcomeMail = async (email, name) => {
       html,
     });
 
+    console.log("Welcome email sent successfully!");
+
     return { message: "Welcome email sent successfully!" };
 
   } catch (error) {
     console.error("Email sending error:", error);
-    return { 
+    return {
       error: "Failed to send welcome email",
-      details: error.message 
+      details: error.message
     };
   }
 };

@@ -86,6 +86,8 @@ export const register = async (req, res) => {
 
 
     await welcomeMail(email, name);
+
+    console.log("User registered", user);
     res.status(201).json({ user });
 
   } catch (error) {
