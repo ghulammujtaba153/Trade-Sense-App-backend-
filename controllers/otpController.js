@@ -79,56 +79,47 @@ export const sendOtp = async (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Trader365 - Verification Code</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b1016;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b1016; min-height: 100vh;">
+    <tr>
+      <td align="center" valign="top">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b1016; padding: 40px 20px;">
+          
+          <!-- Header Section -->
+          <tr>
+            <td align="center" style="padding-bottom: 20px;">
+              <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="max-width: 180px;" />
+              <h2 style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 12px 0 8px;">Hi,</h2>
+              <p style="color: #a0aec0; font-size: 14px; margin: 0; line-height: 1.5;">
+                It is a long established fact that a<br>reader will be distracted.
+              </p>
+            </td>
+          </tr>
 
-  <div style="width: 100%; height: 100vh; background-color: #0b1016; display: flex; flex-direction: column; justify-content: center; border-radius: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
-    
-    <!-- Header Section -->
-    <div style="text-align: center; padding: 40px 24px 20px;">
-      <div style="text-align: center; padding: 16px;">
-        <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto; max-width: 180px;" />
-      </div>
+          <!-- Verification Code Section -->
+          <tr>
+            <td align="center" style="padding: 32px 20px;">
+              <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0 0 24px; letter-spacing: -0.5px;">
+                Verification Code
+              </h1>
+              <div style="background: #70C2E8; border-radius: 12px; padding: 20px; margin: 24px auto; box-shadow: 0 4px 16px rgba(79, 156, 249, 0.3); display: inline-block;">
+                <div style="font-size: 36px; font-weight: 700; color: #ffffff; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                  ${otpCode}
+                </div>
+              </div>
+              <p style="color: #a0aec0; font-size: 14px; line-height: 1.6; margin: 24px 0 0; padding: 0 16px;">
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using.
+              </p>
+            </td>
+          </tr>
 
-      <h2 style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 12px 0 8px;">Hi Diana,</h2>
-      <p style="color: #a0aec0; font-size: 14px; margin: 0; line-height: 1.5;">
-        It is a long established fact that a<br>reader will be distracted.
-      </p>
-    </div>
-
-    <!-- Verification Code Section -->
-    <div style="padding: 32px 24px; text-align: center;">
-      <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0 0 24px; letter-spacing: -0.5px;">
-        Verification Code
-      </h1>
-
-      <!-- Code Display -->
-      <div style="background: #70C2E8; border-radius: 12px; padding: 20px; margin: 24px auto; box-shadow: 0 4px 16px rgba(79, 156, 249, 0.3); width: fit-content;">
-        <div style="font-size: 36px; font-weight: 700; color: #ffffff; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-          ${otpCode}
-        </div>
-      </div>
-
-      <p style="color: #a0aec0; font-size: 14px; line-height: 1.6; margin: 24px 0 0; padding: 0 16px;">
-        It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using.
-      </p>
-    </div>
-
-  </div>
-
-  <!-- Mobile Responsive Styles -->
-  <style>
-    @media only screen and (max-width: 600px) {
-      .code-text {
-        font-size: 28px !important;
-        letter-spacing: 6px !important;
-      }
-      .title {
-        font-size: 28px !important;
-      }
-    }
-  </style>
-
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
+
+
 </html>
 
       
