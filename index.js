@@ -48,8 +48,8 @@ import Stripe from 'stripe';
 import stripeRouter from './routes/stripeRoutes.js';
 import dailyQuoteRouter from './routes/dailyQuoteRoutes.js';
 import resourceCountRouter from './routes/resourceCountRoutes.js';
-
-
+import welcomeMailRouter from './routes/welcomeMailRoutes.js';
+import path from "path";
 
 const app = express();
 dotenv.config();
@@ -60,6 +60,9 @@ app.use(cors({
   }));
   
 app.use(bodyParser.json());
+
+
+app.use("/assets", express.static(path.join(process.cwd(), "assets")));
 
 configureGoogleAuth();
 
@@ -133,6 +136,8 @@ app.use("/api/delete/requests", deleteRequstRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/daily-quote", dailyQuoteRouter)
 app.use("/api/resource-count", resourceCountRouter)
+
+app.use("/api/welcome-mail", welcomeMailRouter)
 
 // Serve uploaded files statically (optional)
 app.use('/uploads', express.static('uploads'));

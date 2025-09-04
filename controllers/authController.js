@@ -14,6 +14,7 @@ import Payment from "../models/paymentSchema.js";
 import Affiliate from './../models/affiliateSchema.js';
 import Enrollment from './../models/enrollmentSchema.js';
 import Bot from "../models/botSchema.js";
+import { welcomeMail } from "../services/welcomeMail.js";
 
 dotenv.config();
 
@@ -82,6 +83,11 @@ export const register = async (req, res) => {
 
     // Create user
     const user = await User.create(data);
+
+
+    await welcomeMail(email, name);
+
+    console.log("User registered", user);
     res.status(201).json({ user });
 
   } catch (error) {
