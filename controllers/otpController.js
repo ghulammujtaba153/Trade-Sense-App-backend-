@@ -91,7 +91,7 @@ export const sendOtp = async (req, res) => {
               <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="max-width: 180px;" />
               <h2 style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 12px 0 8px;">Hi,</h2>
               <p style="color: #a0aec0; font-size: 14px; margin: 0; line-height: 1.5;">
-                It is a long established fact that a<br>reader will be distracted.
+                You recently requested to ${registeration ? 'register' : forgetPassword ? 'reset your password' : 'sign in'} for your Trader365 account. Use the verification code below to ${registeration ? 'complete your registration' : forgetPassword ? 'reset your password' : 'sign in'}.
               </p>
             </td>
           </tr>
@@ -108,7 +108,7 @@ export const sendOtp = async (req, res) => {
                 </div>
               </div>
               <p style="color: #a0aec0; font-size: 14px; line-height: 1.6; margin: 24px 0 0; padding: 0 16px;">
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using.
+                Use the verification code above to complete your sign in or verification process. For security, this code will expire in 10 minutes. If you did not request this code, please ignore this email or contact our support team immediately.
               </p>
             </td>
           </tr>
