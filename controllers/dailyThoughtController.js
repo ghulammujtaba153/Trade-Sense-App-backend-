@@ -17,7 +17,21 @@ export const createDailyThought = async (req, res) => {
     }
 }
 
+export const getAllDailyThoughts = async (req, res) => {
+    try {
+        const dailyThoughts = await DailyThought.find().populate("instructor").sort({ createdAt: -1 });
 
+        res.status(200).json({
+            success: true,
+            dailyThoughts
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
 
 export const getDailyThought = async (req, res) => {
     try {
@@ -43,23 +57,6 @@ export const getDailyThoughtById = async (req, res) => {
         res.status(200).json({
             success: true,
             dailyThought
-        })
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
-}
-
-
-export const getDailyThoughts = async (req, res) => {
-    try {
-        const dailyThoughts = await DailyThought.find().populate("instructor").sort({ createdAt: -1 });
-
-        res.status(200).json({
-            success: true,
-            dailyThoughts
         })
     } catch (error) {
         res.status(500).json({

@@ -277,10 +277,8 @@ export const welcomeMail = async (email, name) => {
   </head>
   <body>
     <div class="container">
-
       <div style="text-align: center; padding: 16px; border-radius: 18px 18px 0 0;">
         <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto;"/>
-      </div>
 
       <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
       <p style="color: #fff; text-align: center; padding: 16px; margin-top: -36px;">
@@ -290,54 +288,23 @@ export const welcomeMail = async (email, name) => {
       <img src="${baseUrl}/assets/header.png" alt="Trader 365 badge" class="header-img" />
 
       <div class="content">
-        <h1>Welcome to Trader 365</h1>
+        <h1>Welcome to Trader365</h1>
         <p>
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout. The point of
-          using Lorem Ipsum is that it has a more-or-less normal distribution of
-          letters, as opposed to using.
+          You’ve just joined a platform created with a single purpose: to help traders master their psychology and achieve lasting success in the markets.
         </p>
         <p>
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout. The point of
-          using Lorem Ipsum is that it has a more-or-less normal distribution of
-          letters, as opposed to using.
+          The difference between good and great traders isn’t luck. It’s discipline, clarity, and the ability to make decisions without being controlled by emotion. That’s what Trader365 is designed to deliver.
         </p>
+        <p>Here’s what you’ll find inside:</p>
+          <p style="margin-top:8px;"><strong>A professional-grade trading journal</strong><br/>Capture every trade in detail. Build a clear record that reveals your strengths, your patterns, and the opportunities to refine your approach.</p>
+          <p style="margin-top:8px;"><strong>Emotional and behavioural tracking</strong><br/>Behind every chart and number lies a decision shaped by your mindset. Trader365 helps you understand how your emotions impact your results, providing the awareness to stay in control when it matters most.</p>
+          <p style="margin-top:8px;"><strong>Actionable insights powered by AI</strong><br/>Our intelligent analysis doesn’t just report data — it translates it into patterns and strategies you can act on. Think of it as your personal performance coach, available every time you trade.</p>
+          <p style="margin-top:8px;"><strong>A path to consistency</strong><br/>Trading isn’t about one good day — it’s about creating a process you can trust. Trader365 is here to help you stay disciplined, focused, and prepared for the long game.</p>
 
-        <a href="#" target="_blank" class="btn">Get Started</a>
-      </div>
+        <p style="color: #e0e7ef; font-size:1.05rem; margin-top:12px;">Now is the time to take your first step:</p>
+        <a href="${baseUrl}/app" target="_blank" class="btn">Start Logging Your Trades</a>
 
-      <div class="footer">
-        <div class="footer-content">
-          <div class="footer-inner">
-            <h1>Get the Trader 365 app!</h1>
-            <p>
-              It is a long established fact that a reader will be distracted by the
-              readable content page.
-            </p>
-            <div class="store-links">
-              <!-- App Store Button -->
-              <a href="https://play.google.com/store/apps/details?id=com.Tradesense" target="_blank" class="store-btn">
-                <img src="${baseUrl}/assets/apple.png" alt="Download on the App Store" />
-                <div class="store-btn-text">
-                  <span class="small">Download on</span>
-                  <span class="large">App Store</span>
-                </div>
-              </a>
-              <!-- Google Play Button -->
-              <a href="https://play.google.com/store/apps/details?id=com.Tradesense" target="_blank" class="store-btn">
-                <img src="${baseUrl}/assets/google-store.png" alt="Get it on Google Play" />
-                <div class="store-btn-text">
-                  <span class="small">Get it on</span>
-                  <span class="large">Google Play</span>
-                </div>
-              </a>
-            </div>
-          </div>
-          <div class="footer-img-container">
-            <img src="${baseUrl}/assets/mobile-footer.png" alt="Trader 365 badge" class="footer-img" />
-          </div>
-        </div>
+        <p style="color: #e0e7ef; font-size:0.95rem; margin-top:18px;">You’ve chosen a platform trusted by traders who are serious about their growth. Welcome to a new standard of trading discipline.<br/><strong>The Trader365 Team</strong></p>
       </div>
     </div>
   </body>

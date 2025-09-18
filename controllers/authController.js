@@ -88,7 +88,11 @@ export const register = async (req, res) => {
     await welcomeMail(email, name);
 
     console.log("User registered", user);
-    res.status(201).json({ user });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+    });
+
+    res.status(201).json({ user , token });
 
   } catch (error) {
     console.error("Error registering user:", error);
@@ -139,6 +143,8 @@ export const registerGoogle = async (req, res) => {
     data.isGoogle = true;
 
     const user = await User.create(data);
+
+    await welcomeMail(email, data.name);
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || '1h',

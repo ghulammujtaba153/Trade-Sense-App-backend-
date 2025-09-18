@@ -6,7 +6,6 @@ import sendNotificationToUser from "../test.js";
 import notificationSchema from '../models/notificationSchema.js';
 
 cron.schedule('* * * * *', async () => {
-  console.log("Checking for scheduled notifications...");
 
   const now = new Date();
   const notifications = await notificationSchema.find({
