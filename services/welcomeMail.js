@@ -64,6 +64,7 @@ export const welcomeMail = async (email, name) => {
       }
       .content {
         padding: 32px 28px 24px 28px;
+        text-align: left;
       }
       .content h1 {
         color: #ffffff;
@@ -281,11 +282,6 @@ export const welcomeMail = async (email, name) => {
         <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto;"/>
 
       <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
-      <p style="color: #fff; text-align: center; padding: 16px; margin-top: -36px;">
-        It is a long established fact that a reader<br>
-        will be distracted.
-      </p>
-      <img src="${baseUrl}/assets/header.png" alt="Trader 365 badge" class="header-img" />
 
       <div class="content">
         <h1>Welcome to Trader365</h1>
