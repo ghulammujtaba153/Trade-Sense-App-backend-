@@ -283,6 +283,7 @@ export const welcomeMail = async (email, name) => {
 
       <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
 
+
       <div class="content">
         <h1>Welcome to Trader365</h1>
         <p>
