@@ -281,8 +281,8 @@ export const welcomeMail = async (email, name) => {
       <div style="text-align: center; padding: 16px; border-radius: 18px 18px 0 0;">
         <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto;"/>
 
-      <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
-
+        <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
+      </div>
 
       <div class="content">
         <h1>Welcome to Trader365</h1>
@@ -299,10 +299,12 @@ export const welcomeMail = async (email, name) => {
           <p style="margin-top:8px;"><strong>A path to consistency</strong><br/>Trading isn’t about one good day — it’s about creating a process you can trust. Trader365 is here to help you stay disciplined, focused, and prepared for the long game.</p>
 
         <p style="color: #e0e7ef; font-size:1.05rem; margin-top:12px;">Now is the time to take your first step:</p>
-        <a href="${baseUrl}/app" target="_blank" class="btn">Start Logging Your Trades</a>
+        <div style="text-align:center; margin-top:12px;">
+          <a href="${baseUrl}/app" target="_blank" class="btn">Start Logging Your Trades</a>
 
-        <p style="color: #e0e7ef; font-size:0.95rem; margin-top:18px;">You’ve chosen a platform trusted by traders who are serious about their growth. Welcome to a new standard of trading discipline.<br/><strong>The Trader365 Team</strong></p>
-      </div>
+          <p style="color: #e0e7ef; font-size:0.95rem; margin-top:18px;">You’ve chosen a platform trusted by traders who are serious about their growth. Welcome to a new standard of trading discipline.<br/><strong>The Trader365 Team</strong></p>
+        </div>
+        </div>
     </div>
   </body>
 </html>
