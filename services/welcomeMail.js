@@ -27,9 +27,11 @@ export const welcomeMail = async (email, name) => {
       <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <!-- <title>Welcome to Trader 365</title> -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <!-- <title>Welcome to Trader 365</title> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
     <style>
       html, body {
         height: 100%;
@@ -78,6 +80,9 @@ export const welcomeMail = async (email, name) => {
         font-size: 1.15rem;
         margin-bottom: 18px;
         line-height: 1.5;
+      }
+      .header-title {
+        color: #ffffff;
       }
       .btn {
         display: inline-block;
@@ -274,13 +279,25 @@ export const welcomeMail = async (email, name) => {
           font-size: 0.8rem;
         }
       }
+      /* Light mode overrides */
+      @media (prefers-color-scheme: light) {
+        body { background: #ffffff !important; }
+        .container { background: #ffffff !important; }
+        .content h1 { color: #111111 !important; }
+        .content p { color: #333333 !important; }
+        .header-title { color: #111111 !important; }
+        .footer { background: rgba(10, 37, 64, 0.06) !important; border: 1px solid rgba(0,0,0,0.08) !important; }
+        .footer h1 { color: #111111 !important; }
+        .footer p { color: #333333 !important; }
+        .store-btn { background: rgba(0,0,0,0.04) !important; color: #111111 !important; border: 1px solid rgba(0,0,0,0.08) !important; }
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div style="text-align: center; padding: 16px; border-radius: 18px 18px 0 0;">
 
-        <h1 style=" text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
+        <h1 class="header-title" style=" text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
       </div>
 
       <div class="content">
