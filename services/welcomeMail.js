@@ -279,9 +279,8 @@ export const welcomeMail = async (email, name) => {
   <body>
     <div class="container">
       <div style="text-align: center; padding: 16px; border-radius: 18px 18px 0 0;">
-        <img src="${baseUrl}/assets/logo-template.png" alt="Trader 365 badge" style="width: auto;"/>
 
-        <h1 style="color: #fff; text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
+        <h1 style=" text-align: center; padding: 16px; font-size:2.4rem; font-weight:700;">Hi ${name}</h1>
       </div>
 
       <div class="content">
@@ -298,11 +297,11 @@ export const welcomeMail = async (email, name) => {
           <p style="margin-top:8px;"><strong>Actionable insights powered by AI</strong><br/>Our intelligent analysis doesn’t just report data — it translates it into patterns and strategies you can act on. Think of it as your personal performance coach, available every time you trade.</p>
           <p style="margin-top:8px;"><strong>A path to consistency</strong><br/>Trading isn’t about one good day — it’s about creating a process you can trust. Trader365 is here to help you stay disciplined, focused, and prepared for the long game.</p>
 
-        <p style="color: #e0e7ef; font-size:1.05rem; margin-top:12px;">Now is the time to take your first step:</p>
+        <p style="font-size:1.05rem; margin-top:12px;">Now is the time to take your first step:</p>
         <div style="text-align:center; margin-top:12px;">
           <a href="${baseUrl}/app" target="_blank" class="btn">Start Logging Your Trades</a>
 
-          <p style="color: #e0e7ef; font-size:0.95rem; margin-top:18px;">You’ve chosen a platform trusted by traders who are serious about their growth. Welcome to a new standard of trading discipline.<br/><strong>The Trader365 Team</strong></p>
+          <p style="font-size:0.95rem; margin-top:18px;">You’ve chosen a platform trusted by traders who are serious about their growth. Welcome to a new standard of trading discipline.<br/><strong>The Trader365 Team</strong></p>
         </div>
         </div>
     </div>
