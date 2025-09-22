@@ -82,21 +82,23 @@ export const sendOtp = async (req, res) => {
   <meta name="supported-color-schemes" content="light dark" />
   <style>
     @media (prefers-color-scheme: dark) {
-      body { background-color: #0b1016 !important; }
+      body, table, td { background-color: #0b1016 !important; color: #e2e8f0 !important; }
+      .text { color: #e2e8f0 !important; }
+      .otp { color: #ffffff !important; }
     }
   </style>
   </head>
-  <body style="margin:0;padding:0;background-color:#0b1016;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0b1016;min-height:100vh;">
+  <body style="margin:0;padding:0;background-color:#ffffff;color:#111111;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff;min-height:100vh;">
       <tr>
         <td align="center" valign="top" style="padding: 32px 16px;">
-          <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#0b1016;">
+          <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#ffffff;">
             <tr>
-              <td style="color:#e2e8f0;font-size:16px;line-height:1.7;">
+              <td class="text" style="color:#111111;font-size:16px;line-height:1.7;">
                 <p style="margin:0 0 16px;">Dear Trader,</p>
                 <p style="margin:0 0 16px;">To proceed with your secure login/verification, please use the following One-Time Password (OTP):</p>
-                <p style="margin:0 0 16px;font-size:18px;color:#ffffff;">
-                  <strong>🔐 OTP:&nbsp;<span style="font-family:'Courier New', monospace; letter-spacing: 2px;">${otpCode}</span></strong>
+                <p style="margin:0 0 16px;font-size:18px;">
+                  <strong>🔐 OTP:&nbsp;<span class="otp" style="font-family:'Courier New', monospace; letter-spacing: 2px; color:#111111;">${otpCode}</span></strong>
                 </p>
                 <p style="margin:0 0 16px;">This code is valid for the next <strong>10 minutes</strong> and can only be used once. Please do not share this OTP with anyone.</p>
                 <p style="margin:0 0 16px;">If you did not request this code, please ignore this email or contact our support team immediately.</p>
