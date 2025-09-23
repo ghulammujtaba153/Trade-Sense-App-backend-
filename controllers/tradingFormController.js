@@ -736,49 +736,57 @@ export const getTradingGraphDataInsightEmotionHeatmap = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // Get last 90 days of moods and trades to build a heatmap
+    // Get last 90 days of moods to build a weekday x 6-blocks heatmap
     const since = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const [moods, trades] = await Promise.all([
-      Mood.find({ userId, createdAt: { $gte: since } }).select("mood createdAt").sort({ createdAt: -1 }),
-      TradingForm.find({ userId, tradeDate: { $gte: since } })
-        .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity emotionalState")
-        .sort({ tradeDate: -1 })
+    const moods = await Mood.find({ userId, createdAt: { $gte: since } })
+      .select("mood createdAt")
+      .sort({ createdAt: -1 });
+
+    // Define 6 time blocks (in UTC) covering 24h, and Mon..Fri (as per UI)
+    const blocks = [
+      { from: 0, to: 4 },  // 00:00 - 03:59
+      { from: 4, to: 8 },  // 04:00 - 07:59
+      { from: 8, to: 12 }, // 08:00 - 11:59
+      { from: 12, to: 16 },// 12:00 - 15:59
+      { from: 16, to: 20 },// 16:00 - 19:59
+      { from: 20, to: 24 } // 20:00 - 23:59
+    ];
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; // will output Mon..Fri
+
+    // Map mood strings to a numeric score (0..100)
+    const scoreMap = new Map([
+      ["happy", 100],
+      ["good", 90],
+      ["cool", 75],
+      ["neutral", 50],
+      ["sad", 30],
+      ["angry", 20],
+      ["unknown", 50]
     ]);
 
-    // Map each trade to a mood at the nearest earlier mood timestamp (fallback to trade.emotionalState)
-    const moodTimeline = moods.map(m => ({ ts: +new Date(m.createdAt), mood: (m.mood || "").toLowerCase() }));
-    const findMoodFor = (ts, fallback) => {
-      for (const m of moodTimeline) {
-        if (m.ts <= ts) return m.mood || fallback;
-      }
-      return (fallback || "unknown").toLowerCase();
-    };
-
-    const calcPnL = (t) => {
-      const entry = Number(t.entryPrice), exit = Number(t.actualExitPrice ?? t.exitPrice), qty = Number(t.quantity ?? 0);
-      if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(qty)) return 0;
-      const dir = (t.direction || "").toLowerCase();
-      return (dir === "buy" ? exit - entry : entry - exit) * qty;
-    };
-
-    const hours = Array.from({ length: 24 }, (_, i) => i);
-    const moodsSet = new Set(["good","happy","sad","angry","cool","neutral","unknown"]);
+    // Initialize grid accumulators per day/block
     const grid = {};
-    for (const m of moodsSet) grid[m] = hours.map(() => ({ wins: 0, total: 0 }));
+    for (const d of days) grid[d] = blocks.map(() => ({ sum: 0, count: 0 }));
 
-    for (const t of trades) {
-      const ts = +new Date(t.tradeDate);
-      const mood = findMoodFor(ts, (t.emotionalState || "unknown").toLowerCase());
-      const mkey = moodsSet.has(mood) ? mood : "unknown";
-      const h = new Date(t.tradeDate).getUTCHours();
-      const pnl = calcPnL(t);
-      grid[mkey][h].total += 1;
-      if (pnl > 0) grid[mkey][h].wins += 1;
+    for (const m of moods) {
+      const dt = new Date(m.createdAt);
+      const dowIdx = dt.getUTCDay() === 0 ? 6 : dt.getUTCDay() - 1; // 0=Mon ... 6=Sun
+      const day = days[dowIdx];
+      const hour = dt.getUTCHours();
+      const idx = blocks.findIndex(b => hour >= b.from && hour < b.to);
+      if (idx === -1) continue;
+      const moodKey = (m.mood || "unknown").toLowerCase();
+      const score = scoreMap.get(moodKey) ?? 50;
+      grid[day][idx].sum += score;
+      grid[day][idx].count += 1;
     }
 
-    const data = Array.from(moodsSet).map(m => ({
-      mood: m,
-      hours: grid[m].map((b, h) => ({ hour: h, winRate: b.total ? +(b.wins / b.total * 100).toFixed(2) : 0 }))
+    const data = days.slice(0,5).map(day => ({
+      day,
+      blocks: grid[day].map((cell, i) => ({
+        block: i + 1,
+        value: cell.count ? Math.round(cell.sum / cell.count) : 0
+      }))
     }));
 
     return res.status(200).json({ success: true, data });
