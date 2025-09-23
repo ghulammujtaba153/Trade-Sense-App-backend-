@@ -578,15 +578,19 @@ export const  getTradingGraphDataSetupPerformance = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
     const trades = await TradingForm.find({ userId })
-      .select("tradeDate setupName direction entryPrice exitPrice actualExitPrice quantity")
+      .select("tradeDate setupName direction entryPrice exitPrice actualExitPrice quantity stopLoss")
       .sort({ tradeDate: -1 });
 
+    // Determine last 7 distinct trade days
     const byDay = new Map();
     for (const t of trades) byDay.set(new Date(t.tradeDate).toISOString().split("T")[0], true);
     const distinctDates = Array.from(byDay.keys()).sort((a,b)=> new Date(b)-new Date(a));
-    if (distinctDates.length < 7) return res.status(200).json({ success: true, data: [], message: "Not enough data (need 7 distinct trade days)" });
+    if (distinctDates.length < 7) {
+      return res.status(200).json({ success: true, data: [], message: "Not enough data (need 7 distinct trade days)" });
+    }
     const last7Set = new Set(distinctDates.slice(0,7));
 
+    // PnL calculator (prefers actualExitPrice)
     const calcPnL = (t) => {
       const entry = Number(t.entryPrice), exit = Number(t.actualExitPrice ?? t.exitPrice), qty = Number(t.quantity ?? 0);
       if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(qty)) return 0;
@@ -594,18 +598,39 @@ export const  getTradingGraphDataSetupPerformance = async (req, res) => {
       return (dir === "buy" ? exit - entry : entry - exit) * qty;
     };
 
-    const sums = new Map();
-    const counts = new Map();
+    // Classify regime via R-multiple of the move vs risk (|exit-entry| / |entry-stop|)
+    const classifyRegime = (t) => {
+      const entry = Number(t.entryPrice);
+      const exit = Number(t.actualExitPrice ?? t.exitPrice);
+      const stop = Number(t.stopLoss);
+      if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(stop)) return "trading"; // neutral bucket
+      const riskPerShare = Math.abs(entry - stop);
+      if (!Number.isFinite(riskPerShare) || riskPerShare <= 0) return "trading";
+      const dir = (t.direction || "").toLowerCase();
+      const movePerShare = Math.abs((dir === "buy" ? exit - entry : entry - exit));
+      const r = movePerShare / riskPerShare; // absolute R
+      if (r < 0.5) return "ranging";      // small, choppy moves
+      if (r < 1.5) return "trading";      // normal, trending moves
+      return "volatile";                  // outsized moves
+    };
+
+    // Aggregate PnL per setup across regimes
+    const perSetup = new Map(); // setup -> { trading, ranging, volatile }
     for (const t of trades) {
       const dateKey = new Date(t.tradeDate).toISOString().split("T")[0];
       if (!last7Set.has(dateKey)) continue;
       const setup = t.setupName || "Unknown";
-      sums.set(setup, (sums.get(setup) || 0) + calcPnL(t));
-      counts.set(setup, (counts.get(setup) || 0) + 1);
+      const bucket = classifyRegime(t);
+      const pnl = calcPnL(t);
+      if (!perSetup.has(setup)) perSetup.set(setup, { trading: 0, ranging: 0, volatile: 0 });
+      perSetup.get(setup)[bucket] += pnl;
     }
-    const data = Array.from(sums.keys()).map(label => ({
+
+    const data = Array.from(perSetup.entries()).map(([label, vals]) => ({
       label,
-      value: +((sums.get(label) || 0) / (counts.get(label) || 1)).toFixed(2)
+      trading: +Number(vals.trading || 0).toFixed(2),
+      ranging: +Number(vals.ranging || 0).toFixed(2),
+      volatile: +Number(vals.volatile || 0).toFixed(2)
     }));
 
     return res.status(200).json({ success: true, data });
@@ -711,49 +736,57 @@ export const getTradingGraphDataInsightEmotionHeatmap = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // Get last 90 days of moods and trades to build a heatmap
+    // Get last 90 days of moods to build a weekday x 6-blocks heatmap
     const since = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const [moods, trades] = await Promise.all([
-      Mood.find({ userId, createdAt: { $gte: since } }).select("mood createdAt").sort({ createdAt: -1 }),
-      TradingForm.find({ userId, tradeDate: { $gte: since } })
-        .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity emotionalState")
-        .sort({ tradeDate: -1 })
+    const moods = await Mood.find({ userId, createdAt: { $gte: since } })
+      .select("mood createdAt")
+      .sort({ createdAt: -1 });
+
+    // Define 6 time blocks (in UTC) covering 24h, and Mon..Fri (as per UI)
+    const blocks = [
+      { from: 0, to: 4 },  // 00:00 - 03:59
+      { from: 4, to: 8 },  // 04:00 - 07:59
+      { from: 8, to: 12 }, // 08:00 - 11:59
+      { from: 12, to: 16 },// 12:00 - 15:59
+      { from: 16, to: 20 },// 16:00 - 19:59
+      { from: 20, to: 24 } // 20:00 - 23:59
+    ];
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; // will output Mon..Fri
+
+    // Map mood strings to a numeric score (0..100)
+    const scoreMap = new Map([
+      ["happy", 100],
+      ["good", 90],
+      ["cool", 75],
+      ["neutral", 50],
+      ["sad", 30],
+      ["angry", 20],
+      ["unknown", 50]
     ]);
 
-    // Map each trade to a mood at the nearest earlier mood timestamp (fallback to trade.emotionalState)
-    const moodTimeline = moods.map(m => ({ ts: +new Date(m.createdAt), mood: (m.mood || "").toLowerCase() }));
-    const findMoodFor = (ts, fallback) => {
-      for (const m of moodTimeline) {
-        if (m.ts <= ts) return m.mood || fallback;
-      }
-      return (fallback || "unknown").toLowerCase();
-    };
-
-    const calcPnL = (t) => {
-      const entry = Number(t.entryPrice), exit = Number(t.actualExitPrice ?? t.exitPrice), qty = Number(t.quantity ?? 0);
-      if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(qty)) return 0;
-      const dir = (t.direction || "").toLowerCase();
-      return (dir === "buy" ? exit - entry : entry - exit) * qty;
-    };
-
-    const hours = Array.from({ length: 24 }, (_, i) => i);
-    const moodsSet = new Set(["good","happy","sad","angry","cool","neutral","unknown"]);
+    // Initialize grid accumulators per day/block
     const grid = {};
-    for (const m of moodsSet) grid[m] = hours.map(() => ({ wins: 0, total: 0 }));
+    for (const d of days) grid[d] = blocks.map(() => ({ sum: 0, count: 0 }));
 
-    for (const t of trades) {
-      const ts = +new Date(t.tradeDate);
-      const mood = findMoodFor(ts, (t.emotionalState || "unknown").toLowerCase());
-      const mkey = moodsSet.has(mood) ? mood : "unknown";
-      const h = new Date(t.tradeDate).getUTCHours();
-      const pnl = calcPnL(t);
-      grid[mkey][h].total += 1;
-      if (pnl > 0) grid[mkey][h].wins += 1;
+    for (const m of moods) {
+      const dt = new Date(m.createdAt);
+      const dowIdx = dt.getUTCDay() === 0 ? 6 : dt.getUTCDay() - 1; // 0=Mon ... 6=Sun
+      const day = days[dowIdx];
+      const hour = dt.getUTCHours();
+      const idx = blocks.findIndex(b => hour >= b.from && hour < b.to);
+      if (idx === -1) continue;
+      const moodKey = (m.mood || "unknown").toLowerCase();
+      const score = scoreMap.get(moodKey) ?? 50;
+      grid[day][idx].sum += score;
+      grid[day][idx].count += 1;
     }
 
-    const data = Array.from(moodsSet).map(m => ({
-      mood: m,
-      hours: grid[m].map((b, h) => ({ hour: h, winRate: b.total ? +(b.wins / b.total * 100).toFixed(2) : 0 }))
+    const data = days.slice(0,5).map(day => ({
+      day,
+      blocks: grid[day].map((cell, i) => ({
+        block: i + 1,
+        value: cell.count ? Math.round(cell.sum / cell.count) : 0
+      }))
     }));
 
     return res.status(200).json({ success: true, data });
