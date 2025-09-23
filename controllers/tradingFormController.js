@@ -578,15 +578,19 @@ export const  getTradingGraphDataSetupPerformance = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
     const trades = await TradingForm.find({ userId })
-      .select("tradeDate setupName direction entryPrice exitPrice actualExitPrice quantity")
+      .select("tradeDate setupName direction entryPrice exitPrice actualExitPrice quantity stopLoss")
       .sort({ tradeDate: -1 });
 
+    // Determine last 7 distinct trade days
     const byDay = new Map();
     for (const t of trades) byDay.set(new Date(t.tradeDate).toISOString().split("T")[0], true);
     const distinctDates = Array.from(byDay.keys()).sort((a,b)=> new Date(b)-new Date(a));
-    if (distinctDates.length < 7) return res.status(200).json({ success: true, data: [], message: "Not enough data (need 7 distinct trade days)" });
+    if (distinctDates.length < 7) {
+      return res.status(200).json({ success: true, data: [], message: "Not enough data (need 7 distinct trade days)" });
+    }
     const last7Set = new Set(distinctDates.slice(0,7));
 
+    // PnL calculator (prefers actualExitPrice)
     const calcPnL = (t) => {
       const entry = Number(t.entryPrice), exit = Number(t.actualExitPrice ?? t.exitPrice), qty = Number(t.quantity ?? 0);
       if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(qty)) return 0;
@@ -594,18 +598,39 @@ export const  getTradingGraphDataSetupPerformance = async (req, res) => {
       return (dir === "buy" ? exit - entry : entry - exit) * qty;
     };
 
-    const sums = new Map();
-    const counts = new Map();
+    // Classify regime via R-multiple of the move vs risk (|exit-entry| / |entry-stop|)
+    const classifyRegime = (t) => {
+      const entry = Number(t.entryPrice);
+      const exit = Number(t.actualExitPrice ?? t.exitPrice);
+      const stop = Number(t.stopLoss);
+      if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(stop)) return "trading"; // neutral bucket
+      const riskPerShare = Math.abs(entry - stop);
+      if (!Number.isFinite(riskPerShare) || riskPerShare <= 0) return "trading";
+      const dir = (t.direction || "").toLowerCase();
+      const movePerShare = Math.abs((dir === "buy" ? exit - entry : entry - exit));
+      const r = movePerShare / riskPerShare; // absolute R
+      if (r < 0.5) return "ranging";      // small, choppy moves
+      if (r < 1.5) return "trading";      // normal, trending moves
+      return "volatile";                  // outsized moves
+    };
+
+    // Aggregate PnL per setup across regimes
+    const perSetup = new Map(); // setup -> { trading, ranging, volatile }
     for (const t of trades) {
       const dateKey = new Date(t.tradeDate).toISOString().split("T")[0];
       if (!last7Set.has(dateKey)) continue;
       const setup = t.setupName || "Unknown";
-      sums.set(setup, (sums.get(setup) || 0) + calcPnL(t));
-      counts.set(setup, (counts.get(setup) || 0) + 1);
+      const bucket = classifyRegime(t);
+      const pnl = calcPnL(t);
+      if (!perSetup.has(setup)) perSetup.set(setup, { trading: 0, ranging: 0, volatile: 0 });
+      perSetup.get(setup)[bucket] += pnl;
     }
-    const data = Array.from(sums.keys()).map(label => ({
+
+    const data = Array.from(perSetup.entries()).map(([label, vals]) => ({
       label,
-      value: +((sums.get(label) || 0) / (counts.get(label) || 1)).toFixed(2)
+      trading: +Number(vals.trading || 0).toFixed(2),
+      ranging: +Number(vals.ranging || 0).toFixed(2),
+      volatile: +Number(vals.volatile || 0).toFixed(2)
     }));
 
     return res.status(200).json({ success: true, data });
