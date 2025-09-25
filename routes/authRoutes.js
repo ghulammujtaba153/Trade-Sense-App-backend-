@@ -1,5 +1,5 @@
 import express from 'express';
-import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, makeAffiliate, register, registerGoogle, setupProfile, updateCategories, updatePassword, updateProfile, updateStatus, updateUser } from '../controllers/authController.js';
+import { addCategory, deleteUser, forgotPassword, getAdmins, getAllUsers, getEditors, getUser, login, makeAffiliate, register, registerGoogle, setupProfile, updateCategories, updatePassword, updateProfile, updateStatus, updateUser, getBackgroundMusicPreference, setBackgroundMusicPreference } from '../controllers/authController.js';
 import passport from 'passport';
 
 
@@ -71,6 +71,10 @@ authRouter.get(
 
 
 authRouter.get('/affiliate/:id', makeAffiliate);
+
+// Background music preference
+authRouter.get('/users/:id/background-music', getBackgroundMusicPreference);
+authRouter.patch('/users/:id/background-music', setBackgroundMusicPreference);
 
 
 export default authRouter;

@@ -447,6 +447,31 @@ export const getAdmins = async (req, res) => {
   }
 }
 
+// Background music preference controllers
+export const getBackgroundMusicPreference = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("backgroundMusicEnabled");
+    if (!user || user.isDeleted) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ backgroundMusicEnabled: !!user.backgroundMusicEnabled });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const setBackgroundMusicPreference = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') return res.status(400).json({ message: "'enabled' boolean required" });
+    const user = await User.findByIdAndUpdate(id, { backgroundMusicEnabled: enabled }, { new: true, select: "backgroundMusicEnabled" });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ backgroundMusicEnabled: user.backgroundMusicEnabled });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
