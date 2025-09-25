@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+
     affiliateCode:{
       type: String,
       default: null
@@ -79,6 +80,11 @@ const userSchema = new mongoose.Schema({
       default: "active"
     },
     isDeleted: {
+      type: Boolean,
+      default: false
+    }
+    ,
+    backgroundMusicEnabled: {
       type: Boolean,
       default: false
     }
