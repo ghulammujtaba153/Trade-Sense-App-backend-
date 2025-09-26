@@ -522,9 +522,9 @@ export const  getTradingGraphDataTradeDurationVsProfit = async (req, res) => {
       const pnl = pnls[idx];
       const y = maxAbs > 0 ? +(Math.abs(pnl) / maxAbs * 100).toFixed(2) : 0;
       if (pnl >= 0) {
-        profitLine.push({ x: minutes, y });
+        profitLine.push({ value: y, label: String(minutes) });
       } else {
-        lossLine.push({ x: minutes, y });
+        lossLine.push({ value: y, label: String(minutes) });
       }
     });
 
@@ -716,17 +716,17 @@ export const  getTradingGraphDataEmotionAtEntryVsOutcome = async (req, res) => {
     const pnls = inWindow.map(calcPnL);
     const maxAbs = pnls.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
 
-    const entryLine = [];
-    const outcomeLine = [];
+  const entryLine = [];
+  const outcomeLine = [];
 
     inWindow.forEach((t, idx) => {
-      const x = idx + 1;
-      const entryY = +emotionScore(t.emotionalState).toFixed(2);
+      const label = String(idx + 1); // sequential label to mirror x-index
+      const entryVal = +emotionScore(t.emotionalState).toFixed(2);
       const pnl = pnls[idx];
-      const outcomeY = maxAbs > 0 ? +((pnl / maxAbs) * 100).toFixed(2) : 0; // -100..100
+      const outcomeVal = maxAbs > 0 ? +((pnl / maxAbs) * 100).toFixed(2) : 0; // -100..100
 
-      entryLine.push({ x, y: entryY, emotion: t.emotionalState || "unknown" });
-      outcomeLine.push({ x, y: outcomeY });
+      entryLine.push({ value: entryVal, label });
+      outcomeLine.push({ value: outcomeVal, label });
     });
 
     return res.status(200).json({ success: true, data: { entryLine, outcomeLine } });
