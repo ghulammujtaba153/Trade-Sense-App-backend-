@@ -501,17 +501,34 @@ export const  getTradingGraphDataTradeDurationVsProfit = async (req, res) => {
       return (dir === "buy" ? exit - entry : entry - exit) * qty;
     };
 
-    // We don't have explicit duration; approximate using minutes since start of day
-    const data = [];
-    for (const t of trades) {
-      const dateKey = new Date(t.tradeDate).toISOString().split("T")[0];
-      if (!last7Set.has(dateKey)) continue;
+    // Filter window and sort by time so lines draw left→right
+    const inWindow = trades
+      .filter(t => last7Set.has(new Date(t.tradeDate).toISOString().split("T")[0]))
+      .sort((a,b)=> new Date(a.tradeDate) - new Date(b.tradeDate));
+
+    // Determine normalization based on absolute max PnL so both lines share 0..100 scale
+    const pnls = inWindow.map(calcPnL);
+    const maxAbs = pnls.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+
+    // Build two series:
+    // - profitLine (green): points where pnl >= 0, y normalized to 0..100
+    // - lossLine (red): points where pnl < 0, y is abs(pnl) normalized to 0..100
+    const profitLine = [];
+    const lossLine = [];
+
+    inWindow.forEach((t, idx) => {
       const dt = new Date(t.tradeDate);
-      const minutes = dt.getUTCHours() * 60 + dt.getUTCMinutes();
-      const pnl = calcPnL(t);
-      data.push({ x: minutes, y: pnl, win: pnl > 0 });
-    }
-    return res.status(200).json({ success: true, data });
+      const minutes = dt.getUTCHours() * 60 + dt.getUTCMinutes(); // x-axis
+      const pnl = pnls[idx];
+      const y = maxAbs > 0 ? +(Math.abs(pnl) / maxAbs * 100).toFixed(2) : 0;
+      if (pnl >= 0) {
+        profitLine.push({ x: minutes, y });
+      } else {
+        lossLine.push({ x: minutes, y });
+      }
+    });
+
+    return res.status(200).json({ success: true, data: { profitLine, lossLine } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -650,7 +667,7 @@ export const  getTradingGraphDataEmotionAtEntryVsOutcome = async (req, res) => {
     const byDay = new Map();
     for (const t of trades) byDay.set(new Date(t.tradeDate).toISOString().split("T")[0], true);
     const distinctDates = Array.from(byDay.keys()).sort((a,b)=> new Date(b)-new Date(a));
-    if (distinctDates.length < 7) return res.status(200).json({ success: true, data: [], message: "Not enough data (need 7 distinct trade days)" });
+    if (distinctDates.length < 7) return res.status(200).json({ success: true, data: { entryLine: [], outcomeLine: [] }, message: "Not enough data (need 7 distinct trade days)" });
     const last7Set = new Set(distinctDates.slice(0,7));
 
     const calcPnL = (t) => {
@@ -660,22 +677,59 @@ export const  getTradingGraphDataEmotionAtEntryVsOutcome = async (req, res) => {
       return (dir === "buy" ? exit - entry : entry - exit) * qty;
     };
 
-    const data = [];
-    let i = 0;
-    for (const t of trades) {
-      const dateKey = new Date(t.tradeDate).toISOString().split("T")[0];
-      if (!last7Set.has(dateKey)) continue;
-      const pnl = calcPnL(t);
-      data.push({
-        x: ++i, // sequence index
-        y: +pnl.toFixed(2),
-        emotion: t.emotionalState || "unknown",
-        size: +Math.min(100, Math.abs(pnl)).toFixed(2),
-        positive: pnl > 0
-      });
-    }
+    // Map emotion strings to a signed score (-100..100): positive emotions > 0, negative < 0, neutral ~ 0
+    const emotionScore = (raw) => {
+      const key = (raw || "unknown").toLowerCase().trim();
+      const map = new Map([
+        // positive
+        ["euphoric", 100],
+        ["happy", 90],
+        ["confident", 80],
+        ["calm", 70],
+        ["good", 60],
+        ["cool", 55],
+        ["excited", 50],
+        // neutral
+        ["neutral", 0],
+        ["unknown", 0],
+        ["okay", 0],
+        // negative
+        ["bored", -10],
+        ["tired", -20],
+        ["anxious", -40],
+        ["nervous", -45],
+        ["stressed", -50],
+        ["fearful", -60],
+        ["frustrated", -65],
+        ["sad", -70],
+        ["angry", -80]
+      ]);
+      return map.get(key) ?? 0;
+    };
 
-    return res.status(200).json({ success: true, data });
+    // Filter to the last 7 distinct days and sort ascending so lines draw left→right
+    const inWindow = trades
+      .filter(t => last7Set.has(new Date(t.tradeDate).toISOString().split("T")[0]))
+      .sort((a,b)=> new Date(a.tradeDate) - new Date(b.tradeDate));
+
+    // Precompute PnLs and normalization factor for outcome line
+    const pnls = inWindow.map(calcPnL);
+    const maxAbs = pnls.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+
+    const entryLine = [];
+    const outcomeLine = [];
+
+    inWindow.forEach((t, idx) => {
+      const x = idx + 1;
+      const entryY = +emotionScore(t.emotionalState).toFixed(2);
+      const pnl = pnls[idx];
+      const outcomeY = maxAbs > 0 ? +((pnl / maxAbs) * 100).toFixed(2) : 0; // -100..100
+
+      entryLine.push({ x, y: entryY, emotion: t.emotionalState || "unknown" });
+      outcomeLine.push({ x, y: outcomeY });
+    });
+
+    return res.status(200).json({ success: true, data: { entryLine, outcomeLine } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error: error.message });
