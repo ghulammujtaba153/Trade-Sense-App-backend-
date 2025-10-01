@@ -762,7 +762,7 @@ export const getTradingGraphDataInsightSummary = async (req, res) => {
     };
     let wins = 0;
     for (const t of trades) if (calcPnL(t) > 0) wins++;
-    const winRate = +(wins / total * 100).toFixed(2);
+  const winRate = +(wins / total * 100).toFixed(2);
 
     // Compute average risk per trade (percent of entry)
     let riskPctSum = 0;
@@ -778,7 +778,102 @@ export const getTradingGraphDataInsightSummary = async (req, res) => {
     }
     const avgRiskPerTradePct = counted ? +(riskPctSum / counted).toFixed(2) : 0;
 
-    return res.status(200).json({ success: true, data: { winRate, avgRiskPerTradePct } });
+    // Zone classification and personalized texts
+    // Define zones: low, middle, high
+    const choose = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Win rate zones (in percent)
+    const winZones = {
+      low: {
+        range: [0, 40],
+        texts: [
+          "You're building consistency—stick to your A+ setups.",
+          "Refine entries and risk for a steadier edge.",
+          "Review your losers to spot repeat patterns.",
+          "Patience pays—skip the marginal trades.",
+          "Tighten risk and protect your mental capital."
+        ]
+      },
+      middle: {
+        range: [40, 60],
+        texts: [
+          "Solid base—double down on what works.",
+          "You’re close to a strong edge—keep the process tight.",
+          "Sharpen exits to convert more small wins.",
+          "Stick to your plan; avoid overtrading when bored.",
+          "Nudge position sizing on your highest-prob setups."
+        ]
+      },
+      high: {
+        range: [60, 100],
+        texts: [
+          "Excellent accuracy—keep your routines exactly as is.",
+          "Protect the edge—avoid complacency after streaks.",
+          "Let winners run; don’t cut them too soon.",
+          "Document what conditions drive your best trades.",
+          "Scale selectively when your A+ criteria align."
+        ]
+      }
+    };
+
+    const riskZones = {
+      // Avg risk % of entry
+      low: {
+        range: [0, 15],
+        texts: [
+          "Risk is conservative—great for building consistency.",
+          "Plenty of room to scale into your best setups.",
+          "Small risk helps you think clearly under pressure.",
+          "Steady risk makes the equity curve smoother.",
+          "Use this as a foundation to size up selectively."
+        ]
+      },
+      middle: {
+        range: [15, 40],
+        texts: [
+          "Risk is balanced—optimize per setup quality.",
+          "Dial in risk by time of day and market regime.",
+          "Match risk to volatility; avoid one-size-fits-all.",
+          "Good balance—trim risk after drawdowns.",
+          "Lean in when confidence and context align."
+        ]
+      },
+      high: {
+        range: [40, 100],
+        texts: [
+          "You're tending to over-risk—tighten stops or size.",
+          "Trim risk until win rate and rhythm stabilize.",
+          "Focus on A+ setups; skip impulse trades.",
+          "Mind drawdown control—protect longevity.",
+          "Use max daily risk to cap the downside."
+        ]
+      }
+    };
+
+    const categorize = (value, zones) => {
+      if (value >= zones.high.range[0]) return { zone: 'high', text: choose(zones.high.texts) };
+      if (value >= zones.middle.range[0]) return { zone: 'middle', text: choose(zones.middle.texts) };
+      return { zone: 'low', text: choose(zones.low.texts) };
+    };
+
+    const win = categorize(winRate, winZones);
+    const risk = categorize(avgRiskPerTradePct, riskZones);
+
+    // Example contextual headlines similar to the UI card copy
+    const winRateText = win.text;
+    const avgRiskPerTradeText = risk.text;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        winRate,
+        avgRiskPerTradePct,
+        winRateZone: win.zone,
+        avgRiskPerTradeZone: risk.zone,
+        winRateText,
+        avgRiskPerTradeText
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error", error: error.message });
