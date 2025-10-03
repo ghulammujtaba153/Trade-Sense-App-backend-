@@ -2,6 +2,69 @@ import TradingForm from "../models/tradingFormSchema.js";
 import Mood from "../models/moodSchema.js";
 import { Readable } from "stream";
 import csv from "csv-parser";
+import * as XLSX from "xlsx";
+
+
+// Shared helpers for duration filtering across getTradingGraphData* endpoints
+function startOfDayUTC(d) {
+  const dt = new Date(d);
+  return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate(), 0, 0, 0, 0));
+}
+
+function endOfDayUTC(d) {
+  const dt = new Date(d);
+  return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate(), 23, 59, 59, 999));
+}
+
+function parseISOOrDMY(s) {
+  if (!s) return undefined;
+  const iso = new Date(s);
+  if (!isNaN(iso)) return iso;
+  // parseDMY is defined later in this module
+  try { return parseDMY(s); } catch { return undefined; }
+}
+
+// duration values: "1 day", "1 week", "1 month", "1 year", "all time", "custom"
+// If custom, use query.from / query.to, accepting ISO or dd/mm/yy. Default to last 7 days.
+function parseDurationRange(query = {}) {
+  const raw = String(query.duration || "1 week").toLowerCase().trim();
+  const now = new Date();
+  const toDate = endOfDayUTC(query.to ? parseISOOrDMY(query.to) || now : now);
+
+  const days = (n) => startOfDayUTC(new Date(now.getTime() - n * 24 * 3600 * 1000));
+
+  switch (raw) {
+    case "1 day":
+    case "1d":
+      return { fromDate: days(1), toDate };
+    case "1 week":
+    case "7d":
+      return { fromDate: days(7), toDate };
+    case "1 month":
+    case "30d":
+      return { fromDate: days(30), toDate };
+    case "1 year":
+    case "365d":
+      return { fromDate: days(365), toDate };
+    case "all time":
+    case "all":
+      return { fromDate: undefined, toDate: undefined };
+    case "custom": {
+      const fromParsed = parseISOOrDMY(query.from);
+      const toParsed = parseISOOrDMY(query.to) || now;
+      if (!fromParsed && !toParsed) {
+        // fallback to 1 week
+        return { fromDate: days(7), toDate };
+      }
+      const f = fromParsed ? startOfDayUTC(fromParsed) : days(7);
+      const t = endOfDayUTC(toParsed);
+      return { fromDate: f, toDate: t };
+    }
+    default:
+      // unknown -> default to 1 week
+      return { fromDate: days(7), toDate };
+  }
+}
 
 
 export const createTradingForm = async (req, res) => {
@@ -36,8 +99,13 @@ export const getTradingGraphData = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
     // Fetch trades for the user
-    const trades = await TradingForm.find({ userId }).select(
+    const trades = await TradingForm.find({ userId, ...dateFilter }).select(
       "tradeDate entryPrice exitPrice quantity"
     );
 
@@ -73,7 +141,12 @@ export const getTradingGraphDataSummary = async (req, res) => {
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
     // Fetch all trades for the user needed to compute PnL
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: 1 }); // ascending for equity walk
 
@@ -151,7 +224,12 @@ export const getTradingGraphDataEquityCurve = async (req, res) => {
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
     // Pull necessary fields; prefer actualExitPrice for realized PnL
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -196,7 +274,12 @@ export const  getTradingGraphDataDailyProfitLoss = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -233,7 +316,12 @@ export const  getTradingGraphDataWinVsLoss = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -284,7 +372,12 @@ export const  getTradingGraphDataAverageProfitLoss = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -329,7 +422,11 @@ export const  getTradingGraphDataRMultipleDistribution = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity stopLoss")
       .sort({ tradeDate: -1 });
 
@@ -371,7 +468,11 @@ export const  getTradingGraphDataDrawdownOverTime = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -411,7 +512,11 @@ export const  getTradingGraphDataCumulativeRiskExposure = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate entryPrice stopLoss quantity")
       .sort({ tradeDate: -1 });
 
@@ -447,7 +552,11 @@ export const  getTradingGraphDataSessionPerformance = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -485,7 +594,11 @@ export const  getTradingGraphDataTradeDurationVsProfit = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -539,7 +652,11 @@ export const  getTradingGraphDataWinrateByTime = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -594,7 +711,11 @@ export const  getTradingGraphDataSetupPerformance = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate setupName direction entryPrice exitPrice actualExitPrice quantity stopLoss")
       .sort({ tradeDate: -1 });
 
@@ -660,7 +781,11 @@ export const  getTradingGraphDataEmotionAtEntryVsOutcome = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate emotionalState direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -742,7 +867,11 @@ export const getTradingGraphDataInsightSummary = async (req, res) => {
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
     // Pull all trades needed for risk and win rate
-    const trades = await TradingForm.find({ userId })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("direction entryPrice actualExitPrice exitPrice quantity stopLoss")
       .sort({ tradeDate: 1 });
 
@@ -885,9 +1014,12 @@ export const getTradingGraphDataInsightEmotionHeatmap = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // Get last 90 days of moods to build a weekday x 6-blocks heatmap
-    const since = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const moods = await Mood.find({ userId, createdAt: { $gte: since } })
+    // Use duration filter for moods (createdAt)
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const createdFilter = fromDate && toDate ? { createdAt: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { createdAt: { $gte: fromDate } }
+      : toDate ? { createdAt: { $lte: toDate } } : {};
+    const moods = await Mood.find({ userId, ...createdFilter })
       .select("mood createdAt")
       .sort({ createdAt: -1 });
 
@@ -950,9 +1082,12 @@ export const getTradingGraphDataInsightReflectionScore  = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // Without a reflection field, proxy a score based on normalized daily PnL over last 12 weeks
-    const since = new Date(Date.now() - 84 * 24 * 3600 * 1000); // 12 weeks
-    const trades = await TradingForm.find({ userId, tradeDate: { $gte: since } })
+    // Use duration filter for trades
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: 1 });
 
@@ -991,9 +1126,12 @@ export const getTradingGraphDataInsightSelfScoredDiscipline = async (req, res) =
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // We don't have explicit self-scored discipline; approximate by average PnL grouped by tradeType
-    const since = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const trades = await TradingForm.find({ userId, tradeDate: { $gte: since } })
+    // Use duration filter for trades
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const dateFilter = fromDate && toDate ? { tradeDate: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { tradeDate: { $gte: fromDate } }
+      : toDate ? { tradeDate: { $lte: toDate } } : {};
+    const trades = await TradingForm.find({ userId, ...dateFilter })
       .select("tradeType tradeDate direction entryPrice exitPrice actualExitPrice quantity")
       .sort({ tradeDate: -1 });
 
@@ -1034,8 +1172,11 @@ export const getTradingGraphDataInsightStreakAnalysis = async (req, res) => {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    const since = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const moods = await Mood.find({ userId, createdAt: { $gte: since } })
+    const { fromDate, toDate } = parseDurationRange(req.query);
+    const createdFilter = fromDate && toDate ? { createdAt: { $gte: fromDate, $lte: toDate } }
+      : fromDate ? { createdAt: { $gte: fromDate } }
+      : toDate ? { createdAt: { $lte: toDate } } : {};
+    const moods = await Mood.find({ userId, ...createdFilter })
       .select("mood createdAt")
       .sort({ createdAt: 1 });
 
@@ -1093,64 +1234,126 @@ export const uploadTradesFromCSV = async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) return res.status(400).json({ error: "Missing userId" });
-    if (!req.file) return res.status(400).json({ error: "CSV file missing" });
+    if (!req.file) return res.status(400).json({ error: "File missing" });
 
     const trades = [];
     const badRows = [];
 
-    await new Promise((resolve, reject) => {
-      Readable.from(req.file.buffer)
-        .pipe(csv())
-        .on("data", row => {
-          try {
-            // map CSV → schema
-            const trade = {
-              userId,
-              stockName: row["PRODUCT"] || "Unknown",
-              tradeDate: parseDMY(row["TRADE DATE."]) ?? Date.now(),
-              tradeType: row["TRADE TYPE"]?.trim(),
-              setupName: row["SETUP NAME"]?.trim(),
-              direction: row["DIRECTION"]?.trim(),
-              entryPrice: safeFloat(row["ENTRY PRICE"]),
-              exitPrice: safeFloat(row["EXIT PRICE"]),
-              quantity: safeInt(row["QUANTITY"]),          // "1lot" → 1
-              stopLoss: safeFloat(row["STOP LOSS"]),
-              takeProfitTarget: safeFloat(row["TAKE PROFIT 1"]),
-              actualExitPrice: safeFloat(row["ACTUAL EXIT PRICE"]),
-              result: computeResult({
-                direction: row["DIRECTION"],
-                entry: safeFloat(row["ENTRY PRICE"]),
-                exit: safeFloat(row["ACTUAL EXIT PRICE"])
-              }),
-              emotionalState: row["EMOTIONAL STATE"]?.trim() || "neutral",
-              notes: row["REFLECTION NOTES"] || "",
-              image: ""               // add later if you support screenshots
-            };
+    // Header normalization helpers: map many header variants to canonical keys
+    const normalizeKey = (k) => String(k || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ") // non-alnum -> space
+      .replace(/\s+/g, " ")
+      .trim();
 
-            // quick validation – skip rows still missing required fields
-            const required = [
-              "tradeType",
-              "setupName",
-              "direction",
-              "entryPrice",
-              "exitPrice",
-              "quantity",
-              "stopLoss",
-              "takeProfitTarget",
-              "actualExitPrice",
-              "result",
-              "emotionalState"
-            ];
-            const hasAll = required.every(k => trade[k] !== undefined && trade[k] !== null);
-            if (hasAll) trades.push(trade);
-            else badRows.push({ row, reason: "missing required after parse" });
-          } catch (err) {
-            badRows.push({ row, reason: err.message });
-          }
-        })
-        .on("end", resolve)
-        .on("error", reject);
-    });
+    const headerAliases = {
+      "PRODUCT": ["product", "symbol", "ticker", "instrument", "stock", "asset", "pair"],
+      "TRADE DATE": ["trade date", "trade date.", "date", "trade_date", "date time", "datetime", "trade datetime", "trade day", "tradedate"],
+      "TRADE TYPE": ["trade type", "type", "order type", "order", "category", "tradetype"],
+      "SETUP NAME": ["setup name", "setup", "strategy", "pattern", "playbook", "setupname"],
+      "DIRECTION": ["direction", "side", "buy/sell", "position", "long/short", "bias"],
+      "ENTRY PRICE": ["entry price", "entry", "price in", "buy price", "sell price", "open price", "entryprice"],
+      "EXIT PRICE": ["exit price", "exit", "close price", "price out", "target price", "exitprice"],
+      "QUANTITY": ["quantity", "qty", "size", "shares", "contracts", "lots", "position size", "amount"],
+      "STOP LOSS": ["stop loss", "sl", "stop", "stoploss", "stop price", "risk price"],
+      "TAKE PROFIT 1": ["take profit 1", "take profit", "tp1", "tp", "target", "target 1", "profit target"],
+      "ACTUAL EXIT PRICE": ["actual exit price", "actual exit", "realized exit", "filled exit", "exit actual", "close price actual"],
+      "EMOTIONAL STATE": ["emotional state", "emotion", "mood", "feeling", "state"],
+      "REFLECTION NOTES": ["reflection notes", "notes", "note", "comment", "comments", "remarks", "journal"]
+    };
+
+    // Build an alias index for quick lookup
+    const aliasIndex = new Map();
+    for (const [canonical, aliases] of Object.entries(headerAliases)) {
+      aliasIndex.set(normalizeKey(canonical), canonical);
+      for (const a of aliases) aliasIndex.set(normalizeKey(a), canonical);
+    }
+
+    const remapRowToCanonical = (row) => {
+      const out = {};
+      for (const [k, v] of Object.entries(row || {})) {
+        const nk = normalizeKey(k);
+        const canon = aliasIndex.get(nk);
+        if (canon && out[canon] === undefined) out[canon] = v; // keep first occurrence
+      }
+      return out;
+    };
+
+    // Helper to process a generic row object into a trade
+    const processRow = (row) => {
+      try {
+        const r = remapRowToCanonical(row);
+        const rawDate = r["TRADE DATE"];
+        const trade = {
+          userId,
+          stockName: r["PRODUCT"] || "Unknown",
+          tradeDate: rawDate instanceof Date ? rawDate : (parseDMY(rawDate) ?? Date.now()),
+          tradeType: r["TRADE TYPE"]?.trim(),
+          setupName: r["SETUP NAME"]?.trim(),
+          direction: r["DIRECTION"]?.trim(),
+          entryPrice: safeFloat(r["ENTRY PRICE"]),
+          exitPrice: safeFloat(r["EXIT PRICE"]),
+          quantity: safeInt(r["QUANTITY"]),          // "1lot" → 1
+          stopLoss: safeFloat(r["STOP LOSS"]),
+          takeProfitTarget: safeFloat(r["TAKE PROFIT 1"]),
+          actualExitPrice: safeFloat(r["ACTUAL EXIT PRICE"]),
+          result: computeResult({
+            direction: r["DIRECTION"],
+            entry: safeFloat(r["ENTRY PRICE"]),
+            exit: safeFloat(r["ACTUAL EXIT PRICE"]) || safeFloat(r["EXIT PRICE"]) // fallback if actual missing
+          }),
+          emotionalState: r["EMOTIONAL STATE"]?.trim() || "neutral",
+          notes: r["REFLECTION NOTES"] || "",
+          image: ""
+        };
+
+        const required = [
+          "tradeType",
+          "setupName",
+          "direction",
+          "entryPrice",
+          "exitPrice",
+          "quantity",
+          "stopLoss",
+          "takeProfitTarget",
+          "actualExitPrice",
+          "result",
+          "emotionalState"
+        ];
+        const hasAll = required.every(k => trade[k] !== undefined && trade[k] !== null);
+        if (hasAll) trades.push(trade);
+        else badRows.push({ row, reason: "missing required after parse" });
+      } catch (err) {
+        badRows.push({ row, reason: err.message });
+      }
+    };
+
+    // Detect Excel vs CSV by mimetype or filename extension
+    const name = req.file.originalname || "";
+    const mt = req.file.mimetype || "";
+    const isExcel = /xlsx?$/.test(name.toLowerCase()) ||
+      mt.includes("spreadsheetml") || mt === "application/vnd.ms-excel";
+
+    if (isExcel) {
+      // Parse Excel buffer
+      const wb = XLSX.read(req.file.buffer, { type: "buffer", cellDates: true });
+      const firstSheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[firstSheetName];
+      // Convert to JSON rows keyed by header names
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      for (const row of rows) {
+        processRow(row);
+      }
+    } else {
+      // CSV path (streaming)
+      await new Promise((resolve, reject) => {
+        Readable.from(req.file.buffer)
+          .pipe(csv())
+          .on("data", (row) => processRow(row))
+          .on("end", resolve)
+          .on("error", reject);
+      });
+    }
 
     // Bulk‑insert only the good rows
     const inserted = await TradingForm.insertMany(trades);
