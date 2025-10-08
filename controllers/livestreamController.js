@@ -46,9 +46,9 @@ export const getCurrentLivestreams = async (req, res) => {
     const now = new Date();
     const limit = Number(req.query.limit) || 10;
     const streams = await Livestream.find({
-      startdatetime: { $lte: now },
-      enddatetime: { $gte: now }
-    }).sort({ startdatetime: 1 }).limit(limit).populate('user');
+      startDateTime: { $lte: now },
+      endDateTime: { $gte: now }
+    }).sort({ startDateTime: 1 }).limit(limit).populate('user');
     res.status(200).json({ success: true, data: streams });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
