@@ -49,6 +49,7 @@ import stripeRouter from './routes/stripeRoutes.js';
 import dailyQuoteRouter from './routes/dailyQuoteRoutes.js';
 import resourceCountRouter from './routes/resourceCountRoutes.js';
 import welcomeMailRouter from './routes/welcomeMailRoutes.js';
+import livestreamRouter from './routes/livestreamRoutes.js';
 import path from "path";
 
 const app = express();
@@ -136,6 +137,7 @@ app.use("/api/delete/requests", deleteRequstRouter)
 app.use("/api/stripe", stripeRouter)
 app.use("/api/daily-quote", dailyQuoteRouter)
 app.use("/api/resource-count", resourceCountRouter)
+app.use("/api/livestream", livestreamRouter)
 
 app.use("/api/welcome-mail", welcomeMailRouter)
 
