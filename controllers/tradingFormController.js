@@ -1256,8 +1256,8 @@ export const uploadTradesFromCSV = async (req, res) => {
       "EXIT PRICE": ["exit price", "exit", "close price", "price out", "target price", "exitprice"],
       "QUANTITY": ["quantity", "qty", "size", "shares", "contracts", "lots", "position size", "amount"],
       "STOP LOSS": ["stop loss", "sl", "stop", "stoploss", "stop price", "risk price"],
-      "TAKE PROFIT 1": ["take profit 1", "take profit", "tp1", "tp", "target", "target 1", "profit target"],
-      "ACTUAL EXIT PRICE": ["actual exit price", "actual exit", "realized exit", "filled exit", "exit actual", "close price actual"],
+      "TAKE PROFIT 1": ["take profit 1", "take profit", "tp1", "tp", "target", "target 1", "profit target", "takeProfitTarget"],
+      "ACTUAL EXIT PRICE": ["actual exit price", "actual exit", "realized exit", "filled exit", "exit actual", "close price actual", "actualexitprice"],
       "EMOTIONAL STATE": ["emotional state", "emotion", "mood", "feeling", "state"],
       "REFLECTION NOTES": ["reflection notes", "notes", "note", "comment", "comments", "remarks", "journal"]
     };
@@ -1320,9 +1320,16 @@ export const uploadTradesFromCSV = async (req, res) => {
           "result",
           "emotionalState"
         ];
-        const hasAll = required.every(k => trade[k] !== undefined && trade[k] !== null);
-        if (hasAll) trades.push(trade);
-        else badRows.push({ row, reason: "missing required after parse" });
+        const missing = required.filter(k => trade[k] === undefined || trade[k] === null);
+        if (missing.length === 0) {
+          trades.push(trade);
+        } else {
+          badRows.push({
+            row,
+            reason: `Missing required column(s): ${missing.join(", ")}`,
+            missingColumns: missing
+          });
+        }
       } catch (err) {
         badRows.push({ row, reason: err.message });
       }
