@@ -1302,7 +1302,7 @@ export const uploadTradesFromCSV = async (req, res) => {
             entry: safeFloat(r["ENTRY PRICE"]),
             exit: safeFloat(r["ACTUAL EXIT PRICE"]) || safeFloat(r["EXIT PRICE"]) // fallback if actual missing
           }),
-          emotionalState: r["EMOTIONAL STATE"]?.trim() || "neutral",
+          emotionalState: r["EMOTIONAL STATE"]?.trim() || "",
           notes: r["REFLECTION NOTES"] || "",
           image: ""
         };
