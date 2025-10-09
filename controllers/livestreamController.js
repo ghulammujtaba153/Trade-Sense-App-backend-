@@ -44,12 +44,19 @@ export const getAllLivestreams = async (req, res) => {
 export const getCurrentLivestreams = async (req, res) => {
   try {
     const now = new Date();
-    const limit = Number(req.query.limit) || 10;
-    const streams = await Livestream.find({
-      startDateTime: { $lte: now },
+
+    // Find the latest stream whose endDateTime is in the future
+    const stream = await Livestream.findOne({
       endDateTime: { $gte: now }
-    }).sort({ startDateTime: 1 }).limit(limit).populate('user');
-    res.status(200).json({ success: true, data: streams });
+    })
+      .sort({ startDateTime: -1 })
+      .populate('user');
+
+    // If no stream found, return null
+    if (!stream) return res.status(200).json({ success: true, data: null });
+
+    // Just send the latest stream
+    return res.status(200).json({ success: true, data: stream });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
