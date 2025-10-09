@@ -808,7 +808,7 @@ export const  getTradingGraphDataEmotionAtEntryVsOutcome = async (req, res) => {
       const map = new Map([
         // positive
         ["euphoric", 100],
-        ["happy", 90],
+        ["focused", 90],
         ["confident", 80],
         ["calm", 70],
         ["good", 60],
@@ -1036,11 +1036,11 @@ export const getTradingGraphDataInsightEmotionHeatmap = async (req, res) => {
 
     // Map mood strings to a numeric score (0..100)
     const scoreMap = new Map([
-      ["happy", 100],
-      ["good", 90],
-      ["cool", 75],
-      ["neutral", 50],
-      ["sad", 30],
+      ["focused", 100],
+      ["calm", 90],
+      ["tired", 75],
+      ["frustrated", 50],
+      ["fearful", 30],
       ["angry", 20],
       ["unknown", 50]
     ]);
@@ -1247,18 +1247,18 @@ export const uploadTradesFromCSV = async (req, res) => {
       .trim();
 
     const headerAliases = {
-      "PRODUCT": ["product", "symbol", "ticker", "instrument", "stock", "asset", "pair"],
+      "PRODUCT": ["product", "symbol", "ticker", "instrument", "stock", "asset", "pair","stockName"],
       "TRADE DATE": ["trade date", "trade date.", "date", "trade_date", "date time", "datetime", "trade datetime", "trade day", "tradedate"],
       "TRADE TYPE": ["trade type", "type", "order type", "order", "category", "tradetype"],
-      "SETUP NAME": ["setup name", "setup", "strategy", "pattern", "playbook", "setupname"],
+      "SETUP NAME": ["setup name", "setup", "strategy", "pattern", "playbook", "setupname","setupName"],
       "DIRECTION": ["direction", "side", "buy/sell", "position", "long/short", "bias"],
-      "ENTRY PRICE": ["entry price", "entry", "price in", "buy price", "sell price", "open price", "entryprice"],
-      "EXIT PRICE": ["exit price", "exit", "close price", "price out", "target price", "exitprice"],
+      "ENTRY PRICE": ["entry price", "entry", "price in", "buy price", "sell price", "open price", "entryprice", "entryPrice"],
+      "EXIT PRICE": ["exit price", "exit", "close price", "price out", "target price", "exitprice","exitPrice"],
       "QUANTITY": ["quantity", "qty", "size", "shares", "contracts", "lots", "position size", "amount"],
-      "STOP LOSS": ["stop loss", "sl", "stop", "stoploss", "stop price", "risk price"],
+      "STOP LOSS": ["stop loss", "sl", "stop", "stoploss", "stop price", "risk price","stopLoss"],
       "TAKE PROFIT 1": ["take profit 1", "take profit", "tp1", "tp", "target", "target 1", "profit target", "takeProfitTarget"],
-      "ACTUAL EXIT PRICE": ["actual exit price", "actual exit", "realized exit", "filled exit", "exit actual", "close price actual", "actualexitprice"],
-      "EMOTIONAL STATE": ["emotional state", "emotion", "mood", "feeling", "state"],
+      "ACTUAL EXIT PRICE": ["actual exit price", "actual exit", "realized exit", "filled exit", "exit actual", "close price actual", "actualexitprice","actualExitPrice"],
+      "EMOTIONAL STATE": ["emotional state", "emotion", "mood", "feeling", "state","emotionalState"],
       "REFLECTION NOTES": ["reflection notes", "notes", "note", "comment", "comments", "remarks", "journal"]
     };
 
@@ -1302,7 +1302,7 @@ export const uploadTradesFromCSV = async (req, res) => {
             entry: safeFloat(r["ENTRY PRICE"]),
             exit: safeFloat(r["ACTUAL EXIT PRICE"]) || safeFloat(r["EXIT PRICE"]) // fallback if actual missing
           }),
-          emotionalState: r["EMOTIONAL STATE"]?.trim() || "",
+          emotionalState: r["EMOTIONAL STATE"] !== undefined ? r["EMOTIONAL STATE"].trim() : null,
           notes: r["REFLECTION NOTES"] || "",
           image: ""
         };
@@ -1317,8 +1317,7 @@ export const uploadTradesFromCSV = async (req, res) => {
           "stopLoss",
           "takeProfitTarget",
           "actualExitPrice",
-          "result",
-          "emotionalState"
+          "result"
         ];
         const missing = required.filter(k => trade[k] === undefined || trade[k] === null);
         if (missing.length === 0) {
